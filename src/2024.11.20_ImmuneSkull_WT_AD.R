@@ -486,8 +486,9 @@ marker_genes = c("Ptprc",                           # General immune cell marker
 #    plot1, plot2, plot3, plot4, results_AD, results_WT, sc, sce_AD, sce_WT, srat, toc, tod,
 #    top10, umap, WTSkull.data, ADSkull.data, all.genes, i, Cluster_markers, cluster2.markers)
 # save.image(file='/Volumes/Biclab/Joseph/2024_skull_bone_marrow/Code shared with Mari/BoneMarrow_2024.05.22.RData')
-# For Mari
-load('/Volumes/biclab/Joseph/2024_skull_bone_marrow/Marrow_Immune_scRNA/Code shared with Mari/BoneMarrow_2024.05.22.RData')
+
+# Load most recent Rdata
+load('../data/rdata_sbm/BoneMarrow_2024.11.15.RData')
 
 # Immune_norm <- FindClusters(Immune_norm, resolution = 2.5, algorithm = 4, random.seed = seed)
 DimPlot(Immune_norm, reduction = "umap", label = TRUE, pt.size = 0.3, cols = viridis::turbo(length(levels(Immune_norm)), begin = 0.2))
