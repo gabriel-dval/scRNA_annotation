@@ -399,7 +399,8 @@ immune_colors = cell_colors[names(cell_colors) %in% levels(Immune_only@active.id
 # UMAP of all cell types
 p = DimPlot(CP_Immune_norm, reduction = "umap", label = TRUE, pt.size = 0.3,
             cols = cell_colors, shuffle = T, seed = seed, label.box = T, repel = T,
-            label.size = 4, label.color = 'white', alpha = 0.75) + theme(legend.position = "none")
+            label.size = 4, label.color = 'white', alpha = 0.75) + 
+            theme(legend.position = "none")
 p
 ggsave(
   '/Volumes/Biclab/Joseph/Development_project/CiteSeq/plots/Dim_reductions/UMAP_all_cells.pdf',
