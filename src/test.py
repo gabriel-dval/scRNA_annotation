@@ -50,6 +50,8 @@ def extract_gem_data(adata, output_dir=None):
     ---
     adata : anndata.AnnData
         The AnnData object to extract the data from.
+    output_dir : str
+        The output directory to save the extracted data.
 
     Returns
     ---
