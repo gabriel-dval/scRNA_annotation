@@ -30,13 +30,13 @@ def convert_mtx_to_h5ad(mtx, genes, barcodes, output_file):
     matrix = mmread(mtx).T.tocsr()
 
     # Load barcodes and genes
-    barcodes = pd.read_csv(barcodes, header=None, sep="\t")
-    print(barcodes)
-    genes = pd.read_csv(genes, header=None, sep="\t")
-    print(genes)
+    barcodes = pd.read_csv(barcodes, header=None, sep="\t")[0].values
+    genes = pd.read_csv(genes, header=None, sep="\t")[0].values
 
     adata = anndata.AnnData(matrix, obs=barcodes, var=genes)
-    #adata.write(output_file)
+    adata.obs.columns = adata.obs.columns.astype(str)
+    adata.var.columns = adata.var.columns.astype(str)
+    adata.write(output_file)
 
 
 if __name__ == '__main__':
