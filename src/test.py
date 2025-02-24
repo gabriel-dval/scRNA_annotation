@@ -80,6 +80,11 @@ def extract_gem_data(adata, output_dir=None):
     barcodes = pd.DataFrame(adata.obs_names)  # Cell barcodes
     barcodes.to_csv(os.path.join(output_dir, "barcodes.tsv"), sep="\t", index=False, header=False)
 
+    # Also extract and save annotation labels
+    if 'cluster_names' in adata.obs.columns:
+        adata.obs['cluster_names'].to_csv(os.path.join(output_dir, "cluster_names.tsv"), 
+                                          sep="\t", index=False, header=False)
+
     return (mtx, genes, barcodes)
 
 
@@ -93,5 +98,6 @@ if __name__ == '__main__':
     # Test extract_gem_data
     ref_file = '../data/ref_sbm/mATLAS_Marrow_droplet.h5ad'
     res = extract_gem_data(ref_file, '../data/ref_sbm//mATLAS_Marrow_droplet_10x')
+ 
   
     
