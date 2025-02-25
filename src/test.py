@@ -63,7 +63,7 @@ def extract_gem_data(adata, output_dir=None):
         List of cell barcodes
     '''
     # First read adata using anndata
-    adata = anndata.read_h5ad(adata)
+    #adata = anndata.read_h5ad(adata)
 
     # Create results directory
     os.makedirs(output_dir, exist_ok=True)
@@ -85,7 +85,7 @@ def extract_gem_data(adata, output_dir=None):
         adata.obs['cluster_names'].to_csv(os.path.join(output_dir, "cluster_names.tsv"), 
                                           sep="\t", index=False, header=False)
 
-    return (mtx, genes, barcodes)
+    return adata
 
 
 if __name__ == '__main__':
@@ -96,8 +96,13 @@ if __name__ == '__main__':
     #convert_mtx_to_h5ad(mtx, genes, barcodes, output_file)
 
     # Test extract_gem_data
-    ref_file = '../data/ref_sbm/mATLAS_Marrow_droplet.h5ad'
-    res = extract_gem_data(ref_file, '../data/ref_sbm//mATLAS_Marrow_droplet_10x')
+    ref_file = '../data/ref_sbm/BoneMarrow_multi_assay.h5ad'
+    #res = extract_gem_data(ref_file, '../data/ref_sbm/mATLAS_Marrow_droplet_10x')
+    adata = anndata.read_h5ad(ref_file)
+    # Filter the AnnData object to keep only cells from 'Bone Marrow'
+    bone_marrow_cells = adata[adata.obs['tissue'] == 'bone marrow']
+    # Now extract only this bone marrow data
+    res = extract_gem_data(bone_marrow_cells, '../data/ref_sbm/BoneMarrow_multi_assay_10x')
  
   
     
