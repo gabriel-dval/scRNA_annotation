@@ -556,7 +556,7 @@ Immune_norm <- RenameIdents(Immune_norm, new.cluster.ids)
 levels(Immune_norm@active.ident)
 
 DimPlot(Immune_norm, reduction = "umap", label = TRUE, pt.size = 0.4, shuffle = T, seed = seed, label.box = T, repel = T, label.size = 4, label.color = 'black', alpha = 0.75) + NoLegend()
-
+#ggsave('results/sbm_manual_annotation.pdf')
 
 # For visualisation purposes, add cluster number to cell-type name
 celltypes_cluster_names = paste(Immune_norm@active.ident,Immune_norm$seurat_clusters,sep = '_')
