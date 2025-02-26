@@ -102,7 +102,10 @@ if __name__ == '__main__':
     # Filter the AnnData object to keep only cells from 'Bone Marrow'
     bone_marrow_cells = adata[adata.obs['tissue'] == 'bone marrow']
     # Now extract only this bone marrow data
-    res = extract_gem_data(bone_marrow_cells, '../data/ref_sbm/BoneMarrow_multi_assay_10x')
+    #res = extract_gem_data(bone_marrow_cells, '../data/ref_sbm/BoneMarrow_multi_assay_10x')
+    bone_marrow_cells.obs['cell_type'].to_csv(os.path.join('../data/ref_sbm/BoneMarrow_multi_assay_10x', 
+                                             "cluster_names.tsv"), 
+                                             sep="\t", index=False, header=False)
  
   
     
