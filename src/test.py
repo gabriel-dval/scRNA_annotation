@@ -63,7 +63,7 @@ def extract_gem_data(adata, output_dir=None):
         List of cell barcodes
     '''
     # First read adata using anndata
-    #adata = anndata.read_h5ad(adata)
+    adata = anndata.read_h5ad(adata)
 
     # Create results directory
     os.makedirs(output_dir, exist_ok=True)
@@ -100,12 +100,21 @@ if __name__ == '__main__':
     #res = extract_gem_data(ref_file, '../data/ref_sbm/mATLAS_Marrow_droplet_10x')
     adata = anndata.read_h5ad(ref_file)
     # Filter the AnnData object to keep only cells from 'Bone Marrow'
-    bone_marrow_cells = adata[adata.obs['tissue'] == 'bone marrow']
+    #bone_marrow_cells = adata[adata.obs['tissue'] == 'bone marrow']
     # Now extract only this bone marrow data
     #res = extract_gem_data(bone_marrow_cells, '../data/ref_sbm/BoneMarrow_multi_assay_10x')
-    bone_marrow_cells.obs['cell_type'].to_csv(os.path.join('../data/ref_sbm/BoneMarrow_multi_assay_10x', 
-                                             "cluster_names.tsv"), 
-                                             sep="\t", index=False, header=False)
+    #bone_marrow_cells.obs['cell_type'].to_csv(os.path.join('../data/ref_sbm/BoneMarrow_multi_assay_10x', 
+                                             #"cluster_names.tsv"), 
+                                             #sep="\t", index=False, header=False)
+
+    # Look at scGPT test data
+    c_data = 'data/ms/c_data.h5ad'
+    ms_data = 'data/ms/filtered_ms_adata.h5ad'
+
+    adata = anndata.read_h5ad(c_data)
+    adata_test = anndata.read_h5ad(ms_data)
+    print(adata.obs['str_batch'])
+    print(adata_test.obs['celltype'])
  
   
     
