@@ -606,6 +606,7 @@ cell_colors <- c(
 
 # Plot cell types with new colours
 DimPlot(Immune_norm, reduction = "umap", label = TRUE, pt.size = 0.4, cols = cell_colors, shuffle = T, seed = seed, label.box = T, repel = T, label.size = 4, label.color = 'black', alpha = 0.75) + NoLegend()
+ggsave('results/manual_annotation.pdf')
 # Plot cluster numbers (for reference)
 DimPlot(Immune_norm, reduction = "umap", label = TRUE, pt.size = 0.5, cols = viridis::turbo(length(levels(Immune_norm$old.ident)), begin = 0.1, end=0.9), shuffle = T, seed = seed, label.box = T, repel = T, label.size = 3.5, label.color = 'black', alpha = 0.75, group.by = 'old.ident') + NoLegend()
 # Plot origin (Ad or WT)
