@@ -8,6 +8,7 @@
 #' datasets - this may cause a bias (overfitting). It is important to remain
 #' cautious about this.
 library(Seurat)
+library(SeuratDisk)
 library(scmap)
 library(SingleCellExperiment)
 library(tidyverse) 
@@ -109,9 +110,28 @@ Convert("manual_annot.h5Seurat", dest = "h5ad")
 help(scmap::indexCluster())
 
 
+###############################################################################
+###############################################################################
+###############################################################################
 
 
 
 
+
+###############################################################################
+# Load past annotations and convert to log1p per 10000 ########################
+###############################################################################
+
+
+# Manual annotation
+
+
+manual <- LoadH5Seurat('results/tm_facs.h5seurat')
+DefaultAssay(manual) <- "RNA"
+manual[["SCT"]] <- NULL
+manual <- NormalizeData(manual, normalization.method = "LogNormalize", 
+                        scale.factor = 10000)
+SaveH5Seurat(manual, filename = "tm_facs.h5seurat")
+Convert("tm_facs.h5seurat", dest = "h5ad")
 
 
