@@ -127,12 +127,12 @@ help(scmap::indexCluster())
 load('../data/rdata_sbm/BoneMarrow_2024.05.22.RData')
 
 # Load H5 Seurat
-manual <- LoadH5Seurat('results/mATLAS_facs.h5seurat')
+manual <- LoadH5Seurat('results/tm_facs.h5seurat')
 manual@reductions <- Immune_norm@reductions
 manual@reductions$umap@assay.used <- "RNA"
 manual@reductions$pca@assay.used <- "RNA"
 
-SaveH5Seurat(manual, filename = "mATLAS_facs.h5seurat")
-Convert("mATLAS_facs.h5seurat", dest = "h5ad")
+SaveH5Seurat(manual, filename = "tm_facs.h5seurat")
+Convert("tm_facs.h5seurat", dest = "h5ad")
 
 
