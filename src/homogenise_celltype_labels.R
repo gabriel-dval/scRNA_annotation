@@ -9,7 +9,6 @@
 #' cautious about this.
 library(Seurat)
 library(SeuratDisk)
-library(scmap)
 library(SingleCellExperiment)
 library(tidyverse) 
 library(ggplot2)
@@ -81,12 +80,75 @@ new.cluster.ids <- c("Neutrophil Mature",  #1
                      "Unknown 3"#53
 )
 
+# Make more generalised cluster names
+broad.cluster.ids <- c("Neutrophil",  #1
+                     "Neutrophil",  #2
+                     "B cells",  #3
+                     "Neutrophil",  #4
+                     "Neutrophil",  #5
+                     "B cells",  #6
+                     "Macrophages",  #7
+                     "Neutrophil",  #8
+                     "Neutrophil",  #9
+                     "Neutrophil", #10
+                     "Neutrophil", #11
+                     "Neutrophil", #12
+                     "Neutrophil", #13
+                     "Neutrophil", #14
+                     "NKT", #15
+                     "Monocytes", #16
+                     "B cells", #17
+                     "HSC/CMP", #18
+                     "Neutrophil", #19
+                     "pDCs", #20
+                     "Neutrophil", #21
+                     "NK", #22
+                     "T cells", #23
+                     "B cells", #24
+                     "Neutrophil", #25
+                     "T cells", #26
+                     "Monocytes", #27
+                     "Macrophages", #28
+                     "GMP", #29
+                     "cDCs", #30
+                     "Monocytes", #31
+                     "Neutrophil", #32
+                     "Neutrophil", #33
+                     "Neutrophil", #34
+                     "Unknown 1", #35
+                     "MDP", #36
+                     "B cells", #37
+                     "Neutrophil", #38
+                     "Monocytes", #39
+                     "Basophils",  #40
+                     "B cells",  #41
+                     "Mast cells",  #42
+                     "B cells",  #43
+                     "T cells",  #44
+                     "B cells",  #45
+                     "B cells",  #46
+                     "B cells",  #47
+                     "Plasma cells",  #48
+                     "Unknown 2",  #49
+                     "Macrophages",#50
+                     "Erythroblasts",#51
+                     "Neutrophil",#52
+                     "Unknown 3"#53
+)
+
 # Add cluster names
-names(new.cluster.ids) <- levels(Immune_norm)
+names(broad.cluster.ids) <- levels(Immune_norm)
 Immune_norm[["old.ident"]] <- as.factor(Idents(Immune_norm) )
 levels(Immune_norm$old.ident)
-Immune_norm <- RenameIdents(Immune_norm, new.cluster.ids)
+Immune_norm <- RenameIdents(Immune_norm, broad.cluster.ids)
 levels(Immune_norm@active.ident)
+
+DimPlot(Immune_norm, reduction = 'umap', label = TRUE, 
+        pt.size = 0.4, shuffle = T, seed = seed, label.box = T, repel = T, 
+        label.size = 4, label.color = 'black', alpha = 0.75) + NoLegend() +
+  ggtitle('Manual Annotation, low resolution')
+FeaturePlot(Immune_norm, features = 'Ly6g')
+
 
 cluster_ids <- as.character(Idents(Immune_norm)) %>% as.data.frame()
 colnames(cluster_ids) <- 'cluster_annot'
@@ -107,7 +169,7 @@ Convert("manual_annot.h5Seurat", dest = "h5ad")
 ###############################################################################
 
 # Load general immune cell reference
-help(scmap::indexCluster())
+library(scmap)
 
 
 ###############################################################################
