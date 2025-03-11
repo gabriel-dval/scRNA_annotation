@@ -165,16 +165,108 @@ Convert("manual_annot.h5Seurat", dest = "h5ad")
 
 
 ###############################################################################
-# First test - use scMAP to lower resolution ##################################
+# Create master csv with results###############################################
 ###############################################################################
 
-# Load general immune cell reference
-library(scmap)
+# Create dataframe with manual annotations
+tool_annotations <- new.cluster.ids %>% as.data.frame()
+colnames(tool_annotations) <- 'manual_annotation'
+
+# OR load existing tools annotations
+tool_annotations <- read_csv('tool_annotations.csv')
+colnames(tool_annotations) <- c('manual_annotation',
+                                'singleR_mATLAS_facs',
+                                'singleR_mATLAS_droplet',
+                                'singleR_panglao',
+                                'singleR_cellxgene',
+                                'singleR_tm_facs',
+                                'scCATCH')
+
+
+# Now add annotations made by other tools/datasets
+# Column titles are in the format : tool_dataset
+
+
+# Load SingleR annotations for different datasets #############################
+singleR_annot <- c('../SingleR/results/mATLAS_facs.h5seurat',
+                   '../SingleR/results/mATLAS_droplet.h5seurat',
+                   '../SingleR/results/panglao.h5seurat',
+                   '../SingleR/results/cellxgene.h5seurat',
+                   '../SingleR/results/tm_facs.h5seurat'
+                   )
+
+for(d in singleR_annot) {
+  # Load dataset, cluster levels and result
+  result <- LoadH5Seurat(d)
+  clusters <- levels(result@active.ident)
+  annot <- rep('None', 53)
+  
+  # Load idents corresponding to each cluster
+  cluster_annotations <- tapply(Idents(result), result$seurat_clusters, 
+                                function(x) unique(x)[1])
+  
+  # Replace by corresponding cell type
+  for(i in 1:length(cluster_annotations)) {
+    index <- unname(cluster_annotations[i])
+    annot[i] <- clusters[index]
+  }
+  
+  # Merge with main dataset
+  tool_annotations <- cbind(tool_annotations, annot)
+}
+
+colnames(tool_annotations) <- c('manual_annotation',
+                                'singleR_mATLAS_facs',
+                                'singleR_mATLAS_droplet',
+                                'singleR_panglao',
+                                'singleR_cellxgene',
+                                'singleR_tm_facs')
 
 
 ###############################################################################
+
+
+# Load scCATCH annotation #####################################################
+clusters <- levels(Immune_norm@active.ident)
+annot <- rep('None', 53)
+
+# Load idents corresponding to each cluster
+cluster_annotations <- tapply(Idents(Immune_norm), Immune_norm$seurat_clusters, 
+                              function(x) unique(x)[1])
+
+# Replace by corresponding cell type
+for(i in 1:length(cluster_annotations)) {
+  index <- unname(cluster_annotations[i])
+  annot[i] <- clusters[index]
+}
+
+print(annot)
+
+# Merge with main dataset
+tool_annotations <- cbind(tool_annotations, annot)
+colnames(tool_annotations)[-1] <- 'scCATCH'
+
+write_csv(tool_annotations, file = 'tool_annotations.csv')
 ###############################################################################
+
+
+# Load scTYPE annotations #####################################################
+sctype_scores <- read_csv('../scTYPE/sctype_scores.csv')
+
+# Remove duplicated annotations and sort by cluster
+double <- duplicated(sctype_scores$cluster)
+sctype_scores <- sctype_scores[!double, ] %>%
+  arrange(cluster)
+
+
+# Merge with main dataset
+tool_annotations <- cbind(tool_annotations, sctype_scores$type)
+colnames(tool_annotations)[8] <- 'scTYPE'
+
+write_csv(tool_annotations, file = 'tool_annotations.csv')
 ###############################################################################
+
+
 
 
 

@@ -1,0 +1,54 @@
+manual_annotation,singleR_mATLAS_facs,singleR_mATLAS_droplet,singleR_panglao,singleR_cellxgene,singleR_tm_facs,scCATCH,scTYPE
+Neutrophil Mature,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Unknown,Intermediate monocytes
+Neutrophil Mature,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Unknown,Non-classical monocytes
+Mature B cells,MPP Fraction B,immature B cell,B cells,B cell,naive B cell,Unknown,Pre-B cells
+Neutrophil Immature,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Unknown,Neutrophils
+Neutrophil Mature,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Unknown,Neutrophils
+Pre-B cells,MPP Fraction C,pre B cell,B cells,B cell,pro-B cell,Unknown,Pre-B cells
+Macrophages,nan-marrow-needs-subclustering,monocyte,Macrophages,monocyte,monocyte,Unknown,Macrophages
+Neutrophil Immature,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Unknown,Neutrophils
+Neutrophil Mature,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Unknown,Intermediate monocytes
+Neutrophil Mature,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Unknown,Neutrophils
+Neutrophil Mature,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Unknown,Neutrophils
+Neutrophil Pre/Pro,granulocytopoietic cell,granulocytopoietic cell,Neutrophils,neutrophil,hematopoietic precursor cell,Neutrophil,Eosinophils
+Neutrophil Immature,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Unknown,Neutrophils
+Neutrophil Mature,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Unknown,Non-classical monocytes
+NKT,immature B cell,naïve T cell,T memory cells,"CD8-positive, alpha-beta T cell",immature NK T cell,Unknown,CD8+ NKT-like cells
+Monocytes,nan-marrow-needs-subclustering,promonocyte,Macrophages,monocyte,granulocyte monocyte progenitor cell,Unknown,Myeloid Dendritic cells
+Immature B cells,naive B cell,immature B cell,B cells,B cell,immature B cell,B Cell,Naive B cells
+HSC/CMP,MPP Fraction A,hematopoietic precursor cell,Hematopoietic stem cells,monocyte,megakaryocyte-erythroid progenitor cell,Hematopoietic Stem Cell,Progenitor cells
+Neutrophil Pre/Pro,granulocytopoietic cell,granulocytopoietic cell,Neutrophils,neutrophil,hematopoietic precursor cell,Stage I Neutrophil,Neutrophils
+pDCs,Cd4+ macrophage,CD4+ positive macrophage,Plasmacytoid dendritic cells,plasmacytoid dendritic cell,macrophage,Plasmacytoid Dendritic Cell,Myeloid Dendritic cells
+Neutrophil Mature,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Stage II Neutrophil,Intermediate monocytes
+NK,immature B cell,naïve T cell,T memory cells,natural killer cell,immature natural killer cell,Natural Killer Cell,Natural killer  cells
+CD4 T cells,immature B cell,naïve T cell,T memory cells,"CD4-positive, alpha-beta T cell",regulatory T cell,Regulatory T Cell,Effector CD4+ T cells
+Pre-B cells,late pro-B cell,pre B cell,B cells,B cell,late pro-B cell,"spiral ganglion neuron, Stem Cell",Pre-B cells
+Neutrophil Pre/Pro,granulocytopoietic cell,granulocytopoietic cell,Neutrophils,neutrophil,hematopoietic precursor cell,Unknown,Eosinophils
+CD8 T cells,immature B cell,naïve T cell,T memory cells,"CD8-positive, alpha-beta T cell",immature T cell,CD8+ T Cell,Naive CD8+ T cells
+Monocytes,nan-marrow-needs-subclustering,monocyte,Macrophages,monocyte,monocyte,Unknown,Macrophages
+Macrophages,nan-marrow-needs-subclustering,monocyte,Macrophages,monocyte,monocyte,Macrophage,Macrophages
+GMP,nan-marrow-needs-subclustering,hematopoietic precursor cell,Unknown,monocyte,granulocyte monocyte progenitor cell,Neutrophil,Neutrophils
+cDCs,nan-marrow-needs-subclustering,promonocyte + macropage,Dendritic cells,conventional dendritic cell,monocyte,spiral ganglion neuron,Myeloid Dendritic cells
+Monocytes,nan-marrow-needs-subclustering,promonocyte,Macrophages,monocyte,granulocyte monocyte progenitor cell,Unknown,Myeloid Dendritic cells
+Neutrophil Immature,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Microglial Cell,Neutrophils
+Neutrophil Mature,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Neutrophil,ISG expressing immune cells
+Neutrophil Immature,granulocyte,granulocyte,Neutrophils,neutrophil,granulocyte,Stage I Neutrophil,Neutrophils
+Unknown 1,nan-marrow-needs-subclustering,monocyte,Macrophages,monocyte,monocyte,Neutrophil,Progenitor cells
+MDP,nan-marrow-needs-subclustering,promonocyte + macropage,Plasmacytoid dendritic cells,plasmacytoid dendritic cell,granulocyte monocyte progenitor cell,Multipotent Progenitor Cell,Progenitor cells
+Pre-B cells,late pro-B cell,pre B cell,B cells,B cell,late pro-B cell,Unknown,Pro-B cells
+Neutrophil Pre/Pro,granulocytopoietic cell,granulocytopoietic cell,Neutrophils,neutrophil,hematopoietic precursor cell,Unknown,Neutrophils
+Monocytes,nan-marrow-needs-subclustering,monocyte,Macrophages,monocyte,granulocyte monocyte progenitor cell,"Hypothalamic Ependymal Cell, Mural Cell, Pan-Gabaergic, spiral ganglion neuron",Myeloid Dendritic cells
+Basophils,megakaryocyte-erythroid progenitor cell,basophil,Basophils,eosinophil,basophil,"Basophil, Stem Cell",Basophils
+Pro-B cells,early pro-B cell,late pro B cell,B cells,B cell,pro-B cell,B Cell,Pro-B cells
+Mast cells,megakaryocyte-erythroid progenitor cell,basophil,Basophils,eosinophil,basophil,Basophil,Basophils
+Pre-B cells,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Unknown,Pre-B cells
+NKT,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Unknown,CD8+ NKT-like cells
+Pax5 B cells,MPP Fraction C,immature B cell,B cells,monocyte,pro-B cell,spiral ganglion neuron,Pre-B cells
+Memory B cells,MPP Fraction B,immature B cell,B cells,B cell,naive B cell,Unknown,Naive B cells
+Memory B cells,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Unknown,Pre-B cells
+Plasma cells,basophil,plasma cell,B cells,plasma cell,naive B cell,Mesenchymal Stem Cell,Plasma B cells
+Unknown 2,granulocytopoietic cell,unknown cell-1,Macrophages,monocyte,monocyte,Unknown,Myeloid Dendritic cells
+Macrophages,nan-marrow-needs-subclustering,monocyte,Macrophages,monocyte,monocyte,Hematopoietic Stem Cell,ISG expressing immune cells
+Erythroblasts,erythroid progenitor,megakaryocyte-erythroid progenitor cell,Neutrophils,monocyte,late pro-B cell,Red Blood Cell (Erythrocyte),Erythroid-like and erythroid precursor cells
+Neutrophil Immature,precursor B cell,granulocyte,Neutrophils,neutrophil,granulocyte,Stage I Neutrophil,Neutrophils
+Unknown 3,immature B cell,naïve T cell,T memory cells,"CD4-positive, alpha-beta T cell",immature T cell,Hematopoietic Stem Cell,Naive CD4+ T cells
