@@ -9,6 +9,7 @@
 #' cautious about this.
 library(Seurat)
 library(SeuratDisk)
+library(SeuratObject)
 library(SingleCellExperiment)
 library(tidyverse) 
 library(ggplot2)
@@ -286,7 +287,24 @@ manual@reductions <- Immune_norm@reductions
 manual@reductions$umap@assay.used <- "RNA"
 manual@reductions$pca@assay.used <- "RNA"
 
-SaveH5Seurat(manual, filename = "tm_facs.h5seurat")
-Convert("tm_facs.h5seurat", dest = "h5ad")
+
+tm <- readRDS('../data/ref_sbm/TM_facs/TM_facs.rds')
+tm@assays$RNA <- as(tm@assays$RNA, "Assay")
+
+log_counts <- tm@assays$RNA@layers$data
+colnames(log_counts) <- colnames(tm)
+rownames(log_counts) <- rownames(tm)
+assay.v3 <- CreateAssayObject(counts = log_counts)
+
+tm[["RNA3"]] <- assay.v3
+DefaultAssay(tm) <- "RNA3"
+tm[["RNA"]] <- NULL
+tm[["RNA"]] <- tm[["RNA3"]]
+DefaultAssay(tm) <- "RNA"
+tm[["RNA3"]] <- NULL
+
+
+SaveH5Seurat(tm, filename = "TM_facs.h5Seurat", overwrite = TRUE)
+Convert("TM_facs.h5Seurat", dest = "h5ad", overwrite = TRUE)
 
 
