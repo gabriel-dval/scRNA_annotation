@@ -107,6 +107,7 @@ def split_csv_dataset(path_to_file, number_of_parts, output_dir):
     '''
     # Read the file
     data = pd.read_csv(path_to_file)
+    data.set_index('Unnamed: 0', inplace=True)
 
     # Create the output directory
     os.makedirs(output_dir, exist_ok=True)
@@ -117,6 +118,7 @@ def split_csv_dataset(path_to_file, number_of_parts, output_dir):
         start_col = i * columns_per_part
         end_col = (i + 1) * columns_per_part if i != number_of_parts - 1 else len(data.columns)
         part = data.iloc[:, start_col:end_col]
+        print(part.head())
         part.to_csv(os.path.join(output_dir, f'log_immune_norm_batch{i + 1}.csv'), index=True)
 
 
@@ -129,9 +131,9 @@ if __name__ == '__main__':
     #convert_mtx_to_h5ad(mtx, genes, barcodes, output_file)
 
     # Test extract_gem_data
-    ref_file = '../data/ref_sbm/BoneMarrow_multi_assay.h5ad'
+    #ref_file = '../data/ref_sbm/BoneMarrow_multi_assay.h5ad'
     #res = extract_gem_data(ref_file, '../data/ref_sbm/mATLAS_Marrow_droplet_10x')
-    adata = anndata.read_h5ad(ref_file)
+    #adata = anndata.read_h5ad(ref_file)
     # Filter the AnnData object to keep only cells from 'Bone Marrow'
     #bone_marrow_cells = adata[adata.obs['tissue'] == 'bone marrow']
     # Now extract only this bone marrow data
@@ -141,9 +143,12 @@ if __name__ == '__main__':
                                              #sep="\t", index=False, header=False)
 
     # Split the dataset
-    split_csv_dataset('../data/raw_sbm/log_immune_norm.csv', 
-                      4, 
-                      '../data/raw_sbm/split_data')
+    # split_csv_dataset('../data/raw_sbm/log_immune_norm.csv', 
+    #                   4, 
+    #                   '../data/raw_sbm/split_data')
+    
+    data = pd.read_csv( '../data/raw_sbm/split_data/log_immune_norm_batch1.csv')
+    print(data.loc[:,'Unnamed: 0'])
  
   
     
