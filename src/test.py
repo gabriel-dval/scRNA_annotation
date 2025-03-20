@@ -88,6 +88,39 @@ def extract_gem_data(adata, output_dir=None):
     return adata
 
 
+def split_csv_dataset(path_to_file, number_of_parts, output_dir):
+    '''Function to split a csv file into multiple parts and save the
+    resulting files in the same directory
+
+    Args
+    ----
+    path_to_file : str
+        The path to the csv file to split
+    number_of_parts : int
+        The number of parts to split the file into
+    output_dir : str
+        The directory to save the resulting files
+
+    Returns
+    -------
+    None
+    '''
+    # Read the file
+    data = pd.read_csv(path_to_file)
+
+    # Create the output directory
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Calculate the number of columns per part
+    columns_per_part = len(data.columns) // number_of_parts
+    for i in range(number_of_parts):
+        start_col = i * columns_per_part
+        end_col = (i + 1) * columns_per_part if i != number_of_parts - 1 else len(data.columns)
+        part = data.iloc[:, start_col:end_col]
+        part.to_csv(os.path.join(output_dir, f'log_immune_norm_batch{i + 1}.csv'), index=True)
+
+
+
 if __name__ == '__main__':
     mtx = '../data/raw_sbm/raw_sbm_data_2024.11.15/matrix.mtx'
     genes = '../data/raw_sbm/raw_sbm_data_2024.11.15/genes.tsv'
@@ -107,14 +140,10 @@ if __name__ == '__main__':
                                              #"cluster_names.tsv"), 
                                              #sep="\t", index=False, header=False)
 
-    # Look at scGPT test data
-    c_data = 'data/ms/c_data.h5ad'
-    ms_data = 'data/ms/filtered_ms_adata.h5ad'
-
-    adata = anndata.read_h5ad(c_data)
-    adata_test = anndata.read_h5ad(ms_data)
-    print(adata.obs['str_batch'])
-    print(adata_test.obs['celltype'])
+    # Split the dataset
+    split_csv_dataset('../data/raw_sbm/log_immune_norm.csv', 
+                      4, 
+                      '../data/raw_sbm/split_data')
  
   
     
