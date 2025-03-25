@@ -77,6 +77,7 @@ def llamacelltype(
         
         # Create ChatBot 
         chatbot = hugchat.ChatBot(cookies=cookies)
+        print(chatbot.get_remote_llms())
         
         # Send prompt and get response
         cell_type_annotations = []
@@ -90,12 +91,14 @@ def llamacelltype(
             batch_prompt = (
                 f"Identify cell types of {tissuename or 'unknown'} cells using the following markers separately for each row. "
                 "Only provide the cell type name. Do not show numbers before the name. "
-                "Some could be a mixture of multiple cell types. "
                 f"{add_info or ''}\n" +
-                "\n".join([f"{cluster}: {processed_input[cluster]}" for cluster in batch_clusters])
+                "\n".join([f"{processed_input[cluster]}" for cluster in batch_clusters])
             )
+
+            print(batch_prompt)
             
-            response = chatbot.query(batch_prompt)
+            response = chatbot.chat(batch_prompt)
+            print(response)
             batch_annotations = response.split('\n')
             
             # Trim and validate annotations
@@ -133,6 +136,6 @@ if __name__ == "__main__":
     annotations = llamacelltype(
         input=gene_dict, 
         tissuename='human PBMC', 
-        add_info='Cells were FACS-sorted for immune cells'
+        add_info=''
     )
-    print(annotations)
+    #print(annotations)
