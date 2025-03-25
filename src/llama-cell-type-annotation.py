@@ -4,10 +4,11 @@ import pandas as pd
 from hugchat import hugchat
 from hugchat.login import Login
 
-def llamacelltype(
+def huggingchatcelltype(
     input: Union[pd.DataFrame, Dict[str, List[str]]],
+    model: int = 0,
     tissuename: str = None,
-    topgenenumber: int = 10,
+    topgenenumber: int = 20,
     add_info: str = None,
     username: str = None,
     password: str = None
@@ -19,6 +20,8 @@ def llamacelltype(
     -----------
     input : Union[pd.DataFrame, Dict[str, List[str]]]
         Either a Seurat-style differential gene DataFrame or a dictionary of gene lists
+    model : int
+        Index of the model to use.
     tissuename : str, optional
         Name of the tissue being analyzed
     topgenenumber : int, default 10
@@ -36,6 +39,9 @@ def llamacelltype(
         If no login credentials are provided, returns the prompt
         Otherwise, returns a list of cell type annotations
     """
+    # Intro message
+    print("Welome to hugchat cell-type annotation tool")
+
     # Check for login credentials
     if username is None:
         username = os.getenv('HUGGINGCHAT_USERNAME')
@@ -77,13 +83,24 @@ def llamacelltype(
         
         # Create ChatBot 
         chatbot = hugchat.ChatBot(cookies=cookies)
-        print(chatbot.get_remote_llms())
+
+        # Select model - this can be done by selecting the index of the model from the list of models
+        chatbot.switch_llm(model)
+
+        # Print list of available models
+        available = chatbot.get_remote_llms()
+        print(f'The selected model is : {available[model].name}')
+        print('Note that other models are available and can be selected by changing the model parameter :\n')
+        for i, model in enumerate(available):
+            print(f'{i} : {model.name}')
+        
+        
         
         # Send prompt and get response
         cell_type_annotations = []
         
         # Process in batches to handle large numbers of clusters
-        batch_size = 30
+        batch_size = 100
         clusters = list(processed_input.keys())
         
         for i in range(0, len(clusters), batch_size):
@@ -94,11 +111,8 @@ def llamacelltype(
                 f"{add_info or ''}\n" +
                 "\n".join([f"{processed_input[cluster]}" for cluster in batch_clusters])
             )
-
-            print(batch_prompt)
             
-            response = chatbot.chat(batch_prompt)
-            print(response)
+            response = chatbot.chat(batch_prompt).wait_until_done()
             batch_annotations = response.split('\n')
             
             # Trim and validate annotations
@@ -116,7 +130,8 @@ def llamacelltype(
             
             cell_type_annotations.extend(batch_annotations)
         
-        print('Note: It is always recommended to check the results returned by Llama 3 in case of AI hallucination, before proceeding with downstream analysis.')
+        print('Annotation done !')
+        print('Note: It is always recommended to check the results returned by this function in case of AI hallucination, before proceeding with downstream analysis.')
         
         return cell_type_annotations
     
@@ -132,10 +147,11 @@ if __name__ == "__main__":
         'cluster2': ['CD14']
     }
     
-    # Set HUGGINGCHAT_USERNAME and HUGGINGCHAT_PASSWORD environment variables
-    annotations = llamacelltype(
+    # Set HUGGINGCHAT_USERNAME and HUGGINGCHAT_PASSWORD environment variables before running
+    annotations = huggingchatcelltype(
         input=gene_dict, 
+        model=1,
         tissuename='human PBMC', 
         add_info=''
     )
-    #print(annotations)
+    print(annotations)
