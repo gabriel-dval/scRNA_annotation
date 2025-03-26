@@ -8,8 +8,7 @@ from hugchat.login import Login
 # Util functions to load data from seurat output
 
 def seuratmarker_to_dict(csv_file: str, 
-                         topgenenumber: int=20,
-                         adj_pval_threshold: float=1*10**-6,
+                         topgenenumber: int=20
     ) -> Dict[str, List[str]]:
     '''Function to convert seurat FindMarkers output (in csv format) to a dictionary of gene lists
     per cluster.
@@ -34,8 +33,7 @@ def seuratmarker_to_dict(csv_file: str,
     print(input)
     
     # Filter significant genes and most differentially expressed genes
-    input = input[input['avg_log2FC'] > 0.25]
-    input = input[input['p_val_adj'] < adj_pval_threshold]
+    input = input[input['avg_log2FC'] > 0]
     processed_input = {}
     for cluster in input['cluster'].unique():
             cluster_genes = input[input['cluster'] == cluster]['gene']
@@ -67,9 +65,10 @@ def list_to_csv(data: List[str], output_file: str) -> None:
 
 def huggingchatcelltype(
     input: Union[pd.DataFrame, Dict[str, List[str]]],
+    output_dir: str = 'results',
     model: int = 0,
     tissuename: str = None,
-    topgenenumber: int = 20,
+    topgenenumber: int = 10,
     add_info: str = None,
     username: str = None,
     password: str = None
@@ -81,6 +80,8 @@ def huggingchatcelltype(
     -----------
     input : Union[pd.DataFrame, Dict[str, List[str]]]
         Either a Seurat-style differential gene DataFrame or a dictionary of gene lists
+    output_dir : str, default 'results'
+        Directory to save the results
     model : int
         Index of the model to use.
     tissuename : str, optional
@@ -114,6 +115,7 @@ def huggingchatcelltype(
         # If input is a dictionary, nothing needs to be done
         print('Dictionnary input detected - make sure values are comma-separated gene lists')
         processed_input = input
+        topgenenumber = list(test.values())[0].count(',') + 1
     elif isinstance(input, pd.DataFrame):
         # If input is a DataFrame, filter significant genes and get top genes per cluster
         input = input[input['avg_log2FC'] > 0]
@@ -126,7 +128,8 @@ def huggingchatcelltype(
     
     # Construct prompt
     prompt = (
-        f"Identify cell types of {tissuename or 'unknown'} cells using the following markers separately for each row. "
+        f"Identify cell types of {tissuename} cell clusters using the following gene markers. "
+        "Each row corresponds to one cluster."
         "Only provide the cell type name. Do not show numbers before the name. "
         "Some could be a mixture of multiple cell types. "
         f"{add_info or ''}\n" +
@@ -153,48 +156,31 @@ def huggingchatcelltype(
         available = chatbot.get_remote_llms()
         print(f'The selected model is : {available[model].name}')
         print('Note that other models are available and can be selected by changing the model number :\n')
-        for i, model in enumerate(available):
-            print(f'{i} : {model.name}')
+        for i, mod in enumerate(available):
+            print(f'{i} : {mod.name}')
         
         
+        # Send prompt and get response   
+        response = chatbot.chat(prompt).wait_until_done()
+        annotations = response.split('\n')
         
-        # Send prompt and get response
-        cell_type_annotations = []
+        # Trim and validate annotations
+        cell_type_annotations = [
+            annotation.strip() 
+            for annotation in annotations 
+            if annotation.strip() and not annotation.startswith(tuple('0123456789'))
+        ]
         
-        # Process in batches to handle large numbers of clusters
-        batch_size = 100
-        clusters = list(processed_input.keys())
+        # Ensure we have one annotation per cluster in the batch 
+        # TODO
         
-        for i in range(0, len(clusters), batch_size):
-            batch_clusters = clusters[i:i+batch_size]
-            batch_prompt = (
-                f"Identify cell types of {tissuename or 'unknown'} cells using the following markers separately for each row. "
-                "Only provide the cell type name. Do not show numbers before the name. "
-                f"{add_info or ''}\n" +
-                "\n".join([f"{processed_input[cluster]}" for cluster in batch_clusters])
-            )
-            
-            response = chatbot.chat(batch_prompt).wait_until_done()
-            batch_annotations = response.split('\n')
-            
-            # Trim and validate annotations
-            batch_annotations = [
-                annotation.strip() 
-                for annotation in batch_annotations 
-                if annotation.strip() and not annotation.startswith(tuple('0123456789'))
-            ]
-            
-            # Ensure we have one annotation per cluster in the batch
-            if len(batch_annotations) != len(batch_clusters):
-                print(f"Warning: Unexpected number of annotations in batch. Expected {len(batch_clusters)}, got {len(batch_annotations)}")
-                # Pad or truncate to match
-                batch_annotations = batch_annotations[:len(batch_clusters)] + ['Unknown'] * max(0, len(batch_clusters) - len(batch_annotations))
-            
-            cell_type_annotations.extend(batch_annotations)
         
         print('\nAnnotation done !')
         print('Note: It is always recommended to check the results returned by this function in case of AI hallucination, before proceeding with downstream analysis.')
         
+        model_name = available[model].name.split('/', 1)[-1]
+        list_to_csv(cell_type_annotations, f'{output_dir}/{tissuename}_{model_name}_{topgenenumber}markergenes_annotation.csv')
+
         return cell_type_annotations
     
     except Exception as e:
@@ -209,15 +195,12 @@ if __name__ == "__main__":
     file = '../data/raw_cp/cp_cluster_markers_logfold1.csv'
     test = seuratmarker_to_dict(file,
                                 topgenenumber=20)
-    
+    print(list(test.values())[0].count(',') + 1)
     
     # Set HUGGINGCHAT_USERNAME and HUGGINGCHAT_PASSWORD environment variables before running
     annotations = huggingchatcelltype(
         input=test, 
         model=0,
-        tissuename='mouse choroid plexus', 
-        add_info=''
+        tissuename='mouse immune cells', 
+        add_info='Be as precise as possible.'
     )
-    print(annotations)
-
-    list_to_csv(annotations, 'results/cp_llama3_annotation_1.csv')
