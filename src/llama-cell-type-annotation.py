@@ -4,6 +4,67 @@ import pandas as pd
 from hugchat import hugchat
 from hugchat.login import Login
 
+
+# Util functions to load data from seurat output
+
+def seuratmarker_to_dict(csv_file: str, 
+                         topgenenumber: int=20,
+                         adj_pval_threshold: float=1*10**-6,
+    ) -> Dict[str, List[str]]:
+    '''Function to convert seurat FindMarkers output (in csv format) to a dictionary of gene lists
+    per cluster.
+
+    Args
+    ----
+    csv_file : str
+        Path to the csv file containing the seurat FindMarkers output.
+    topgenenumber : int
+        Number of top genes to consider per cluster.
+    adj_pval_threshold : float
+        Adjusted p-value threshold for significance.
+    
+
+    Returns
+    -------
+    Dict[str, List[str]]
+        Dictionary of gene lists per cluster.
+    '''
+    # Read the csv file
+    input = pd.read_csv(csv_file)
+    print(input)
+    
+    # Filter significant genes and most differentially expressed genes
+    input = input[input['avg_log2FC'] > 0.25]
+    input = input[input['p_val_adj'] < adj_pval_threshold]
+    processed_input = {}
+    for cluster in input['cluster'].unique():
+            cluster_genes = input[input['cluster'] == cluster]['gene']
+            processed_input[cluster] = ','.join(cluster_genes[:topgenenumber])
+
+    return processed_input
+    
+
+def list_to_csv(data: List[str], output_file: str) -> None:
+    """
+    Save a list of elements into a single-column CSV file with the column name 'Annotation'.
+
+    Args:
+    ----
+    data : List[str]
+        List of elements to save.
+    output_file : str
+        Path to the output CSV file.
+
+    Returns:
+    -------
+    None
+    """
+    df = pd.DataFrame(data, columns=['Annotation'])
+    df.to_csv(output_file, index=False)
+
+
+# Main function
+
 def huggingchatcelltype(
     input: Union[pd.DataFrame, Dict[str, List[str]]],
     model: int = 0,
@@ -50,14 +111,15 @@ def huggingchatcelltype(
     
     # Process input 
     if isinstance(input, dict):
-        # If input is a dictionary, convert gene lists to comma-separated strings
-        processed_input = {k: ','.join(v) for k, v in input.items()}
+        # If input is a dictionary, nothing needs to be done
+        print('Dictionnary input detected - make sure values are comma-separated gene lists')
+        processed_input = input
     elif isinstance(input, pd.DataFrame):
         # If input is a DataFrame, filter significant genes and get top genes per cluster
         input = input[input['avg_log2FC'] > 0]
         processed_input = {}
         for cluster in input['cluster'].unique():
-            cluster_genes = input[input['cluster'] == cluster]['gene']
+            cluster_genes = input[input['cluster'] == cluster].sort_values(by='avg_log2FC', ascending=False)['gene']
             processed_input[cluster] = ','.join(cluster_genes[:topgenenumber])
     else:
         raise ValueError("Input must be a pandas DataFrame or a dictionary of gene lists")
@@ -90,7 +152,7 @@ def huggingchatcelltype(
         # Print list of available models
         available = chatbot.get_remote_llms()
         print(f'The selected model is : {available[model].name}')
-        print('Note that other models are available and can be selected by changing the model parameter :\n')
+        print('Note that other models are available and can be selected by changing the model number :\n')
         for i, model in enumerate(available):
             print(f'{i} : {model.name}')
         
@@ -130,7 +192,7 @@ def huggingchatcelltype(
             
             cell_type_annotations.extend(batch_annotations)
         
-        print('Annotation done !')
+        print('\nAnnotation done !')
         print('Note: It is always recommended to check the results returned by this function in case of AI hallucination, before proceeding with downstream analysis.')
         
         return cell_type_annotations
@@ -139,19 +201,23 @@ def huggingchatcelltype(
         print(f"Error in HuggingChat interaction: {e}")
         return prompt
 
+
 # Example usage
 if __name__ == "__main__":
-    # Example with dictionary input
-    gene_dict = {
-        'cluster1': ['CD4', 'CD3D'],
-        'cluster2': ['CD14']
-    }
+    
+    # Test method
+    file = '../data/raw_cp/cp_cluster_markers_logfold1.csv'
+    test = seuratmarker_to_dict(file,
+                                topgenenumber=20)
+    
     
     # Set HUGGINGCHAT_USERNAME and HUGGINGCHAT_PASSWORD environment variables before running
     annotations = huggingchatcelltype(
-        input=gene_dict, 
-        model=1,
-        tissuename='human PBMC', 
+        input=test, 
+        model=0,
+        tissuename='mouse choroid plexus', 
         add_info=''
     )
     print(annotations)
+
+    list_to_csv(annotations, 'results/cp_llama3_annotation_1.csv')
