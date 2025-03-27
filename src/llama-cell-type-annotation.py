@@ -202,12 +202,12 @@ if __name__ == "__main__":
     # Test method
     file = '../data/raw_cp/cp_cluster_markers.csv'
     test = seuratmarker_to_dict(file,
-                                topgenenumber=10)
+                                topgenenumber=30)
     
     # Set HUGGINGCHAT_USERNAME and HUGGINGCHAT_PASSWORD environment variables before running
     annotations = huggingchatcelltype(
         input=test, 
-        model=3,
+        model=7,
         tissuename='mouse immune cells from the choroid plexus', 
         add_info='Be as precise as possible.'
     )
