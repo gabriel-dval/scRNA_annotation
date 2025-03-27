@@ -121,7 +121,7 @@ def huggingchatcelltype(
         input = input[input['avg_log2FC'] > 0]
         processed_input = {}
         for cluster in input['cluster'].unique():
-            cluster_genes = input[input['cluster'] == cluster].sort_values(by='avg_log2FC', ascending=False)['gene']
+            cluster_genes = input[input['cluster'] == cluster]['gene']
             processed_input[cluster] = ','.join(cluster_genes[:topgenenumber])
     else:
         raise ValueError("Input must be a pandas DataFrame or a dictionary of gene lists")
@@ -129,11 +129,19 @@ def huggingchatcelltype(
     # Construct prompt
     prompt = (
         f"Identify cell types of {tissuename} cell clusters using the following gene markers. "
-        "Each row corresponds to one cluster."
-        "Only provide the cell type name. Do not show numbers before the name. "
+        "Each row corresponds to one cluster. "
+        "Only provide the cell type name. Do not show cluster numbers before the cell type name. "
         "Some could be a mixture of multiple cell types. "
         f"{add_info or ''}\n" +
-        "\n".join([f"{cluster}: {genes}" for cluster, genes in processed_input.items()])
+        "\n".join([f"{cluster} : {genes}" for cluster, genes in processed_input.items()])
+    )
+
+    prompt_two = (
+        f'Identify cell types of {tissuename} cells using the following markers separately for each\n row.' 
+        'Only provide the cell type name. Do not show numbers before the name.\n ' 
+        'Some could be a mixture of multiple cell types.'
+        f"{add_info or ''}\n" +
+        "\n".join([f"{cluster} : {genes}" for cluster, genes in processed_input.items()])
     )
     
     # If no login credentials, return prompt
@@ -168,7 +176,7 @@ def huggingchatcelltype(
         cell_type_annotations = [
             annotation.strip() 
             for annotation in annotations 
-            if annotation.strip() and not annotation.startswith(tuple('0123456789'))
+            if annotation.strip()     #and not annotation.startswith(tuple('0123456789'))
         ]
         
         # Ensure we have one annotation per cluster in the batch 
@@ -192,15 +200,19 @@ def huggingchatcelltype(
 if __name__ == "__main__":
     
     # Test method
-    file = '../data/raw_cp/cp_cluster_markers_logfold1.csv'
+    file = '../data/raw_cp/cp_cluster_markers.csv'
     test = seuratmarker_to_dict(file,
-                                topgenenumber=20)
-    print(list(test.values())[0].count(',') + 1)
+                                topgenenumber=10)
     
     # Set HUGGINGCHAT_USERNAME and HUGGINGCHAT_PASSWORD environment variables before running
     annotations = huggingchatcelltype(
         input=test, 
-        model=0,
-        tissuename='mouse immune cells', 
+        model=3,
+        tissuename='mouse immune cells from the choroid plexus', 
         add_info='Be as precise as possible.'
     )
+
+    print(annotations)
+
+
+
