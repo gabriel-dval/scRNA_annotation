@@ -5,6 +5,7 @@ methods.
 
 import anndata
 import pandas as pd
+from PIL import Image
 
 import os
 from scipy.io import mmread, mmwrite
@@ -122,6 +123,60 @@ def split_csv_dataset(path_to_file, number_of_parts, output_dir):
         part.to_csv(os.path.join(output_dir, f'log_immune_norm_batch{i + 1}.csv'), index=True)
 
 
+def convert_nonblack_to_white(image_path, output_path, threshold=50):
+    # Load the image
+    image = Image.open(image_path)
+    
+    # Convert image to RGB mode
+    image = image.convert("RGB")
+    
+    # Get pixel data
+    pixels = image.load()
+    width, height = image.size
+    
+    # Process each pixel
+    # Process each pixel
+    for x in range(width):
+        for y in range(height):
+            r, g, b = pixels[x, y]
+            # Calculate brightness (approximate luminance)
+            brightness = (r + g + b) / 3
+            # If the pixel is not dark enough, turn it white
+            if brightness > threshold:
+                pixels[x, y] = (255, 255, 255)
+    
+    # Save the processed image
+    image.save(output_path)
+
+
+def convert_nonblack_to_transparent(image_path, output_path, threshold=50):
+    # Load the image
+    image = Image.open(image_path)
+    
+    # Convert image to RGBA mode (adds alpha channel)
+    image = image.convert("RGBA")
+    
+    # Get pixel data
+    pixels = image.load()
+    width, height = image.size
+    
+    # Process each pixel
+    for x in range(width):
+        for y in range(height):
+            r, g, b, a = pixels[x, y]
+            # Calculate brightness (approximate luminance)
+            brightness = (r + g + b) / 3
+            # If the pixel is bright (white or near white), make it transparent
+            if brightness > threshold:
+                pixels[x, y] = (255, 255, 255, 0)  # Set alpha to 0 (transparent)
+            # If pixel is dark, set it to white
+            if brightness < threshold:
+                pixels[x, y] = (255, 255, 255, a)  # Set to white, preserve alpha
+            
+    
+    # Save the processed image
+    image.save(output_path, "PNG")  # Save as PNG to preserve transparency
+
 
 if __name__ == '__main__':
     mtx = '../data/raw_sbm/raw_sbm_data_2024.11.15/matrix.mtx'
@@ -147,8 +202,10 @@ if __name__ == '__main__':
     #                   4, 
     #                   '../data/raw_sbm/split_data')
     
-    data = pd.read_csv( '../data/raw_sbm/split_data/log_immune_norm_batch1.csv')
-    print(data.loc[:,'Unnamed: 0'])
+    #data = pd.read_csv( '../data/raw_sbm/split_data/log_immune_norm_batch1.csv')
+    #print(data.loc[:,'Unnamed: 0'])
+
+    convert_nonblack_to_transparent('../../Desktop/mouse_brain_white.jpg', '../../Desktop/mouse_brain_transparent_2.png', )
  
   
     
