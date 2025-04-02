@@ -205,7 +205,7 @@ if __name__ == '__main__':
     #data = pd.read_csv( '../data/raw_sbm/split_data/log_immune_norm_batch1.csv')
     #print(data.loc[:,'Unnamed: 0'])
 
-    convert_nonblack_to_transparent('../../Desktop/mouse_brain_white.jpg', '../../Desktop/mouse_brain_transparent_2.png', )
+    #convert_nonblack_to_transparent('../../Desktop/mouse_brain_white.jpg', '../../Desktop/mouse_brain_transparent_2.png', )
  
   
     
