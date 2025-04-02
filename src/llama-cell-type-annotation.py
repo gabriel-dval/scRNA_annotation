@@ -205,6 +205,7 @@ if __name__ == "__main__":
                                 topgenenumber=30)
     
     # Set HUGGINGCHAT_USERNAME and HUGGINGCHAT_PASSWORD environment variables before running
+    # (This mst be done independently of the script)
     annotations = huggingchatcelltype(
         input=test, 
         model=7,
