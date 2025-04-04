@@ -271,8 +271,6 @@ write_csv(tool_annotations, file = 'tool_annotations.csv')
 
 
 
-
-
 ###############################################################################
 # Load past annotations and convert to log1p per 10000 ########################
 ###############################################################################
@@ -306,5 +304,4 @@ tm[["RNA3"]] <- NULL
 
 SaveH5Seurat(tm, filename = "TM_facs.h5Seurat", overwrite = TRUE)
 Convert("TM_facs.h5Seurat", dest = "h5ad", overwrite = TRUE)
-
 
