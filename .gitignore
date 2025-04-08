@@ -3,3 +3,4 @@ data/
 src/scGPT/
 results/
 *.tar.gz
+src/annotate.R
