@@ -199,7 +199,7 @@ annotations <- unlist(res)
 load('../data/rdata_cp/CP_base_data.RData')
 
 
-# # Make equivalency vector
+# Make equivalency vector
 cluster_annotation <- setNames(annotations, 
                                levels(Idents(CP_Immune_norm)))
 ct <- cluster_annotation %>% as.data.frame()
