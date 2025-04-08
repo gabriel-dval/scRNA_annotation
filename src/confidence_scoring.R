@@ -65,6 +65,9 @@ clean_words <- function(string_vec) {
   # Split into individual words using whitespace
   single_words <- unlist(strsplit(single_words, "[ \u00A0]+"))
   
+  # Remove plurals
+  single_words <- sub("s$", "", single_words)
+  
   return(single_words)
 }
 
@@ -97,12 +100,12 @@ calculate_proportions <- function(clean_word_vector) {
     labs(title = "Word cloud", fill = 'Label') +
     theme_void() + 
     geom_text(aes(label = Count), 
-                           position = position_stack(vjust = 0.5), 
-                           color = "white")
+              position = position_stack(vjust = 0.5), 
+              color = "white")
   
   # Get heterogeneity score
   h_score <- length(word_frequency$Label)
-
+  
   
   # Create output object
   res <- list(word_frequency, p, h_score)
@@ -129,8 +132,8 @@ res <- lapply(X = res, FUN = calculate_proportions)
 
 
 # wordcloud function example for downstream
-wordcloud(words = res[[22]]$proportions$Label, 
-                freq = res[[22]]$proportions$Count, min.freq = 1, 
+wordcloud(words = res[[23]]$proportions$Label, 
+                freq = res[[23]]$proportions$Count, min.freq = 1, 
                 scale = c(3,0.5), colors = brewer.pal(8, "Dark2"))
 
 
