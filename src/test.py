@@ -10,6 +10,8 @@ from PIL import Image
 import os
 from scipy.io import mmread, mmwrite
 
+# Utility functions
+
 def convert_mtx_to_h5ad(mtx, genes, barcodes, output_file):
     '''
     Convert a sparse matrix to a h5ad file.
