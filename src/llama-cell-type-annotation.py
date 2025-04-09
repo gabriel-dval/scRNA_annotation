@@ -8,7 +8,8 @@ from hugchat.login import Login
 # Util functions to load data from seurat output
 
 def seuratmarker_to_dict(csv_file: str, 
-                         topgenenumber: int=20
+                         topgenenumber: int=20,
+                         logfc_threshold: float=0,
     ) -> Dict[str, List[str]]:
     '''Function to convert seurat FindMarkers output (in csv format) to a dictionary of gene lists
     per cluster.
@@ -19,8 +20,8 @@ def seuratmarker_to_dict(csv_file: str,
         Path to the csv file containing the seurat FindMarkers output.
     topgenenumber : int
         Number of top genes to consider per cluster.
-    adj_pval_threshold : float
-        Adjusted p-value threshold for significance.
+    logfc_threshold : float
+        Log Fold-Change threshold for significance.
     
 
     Returns
@@ -33,7 +34,7 @@ def seuratmarker_to_dict(csv_file: str,
     print(input)
     
     # Filter significant genes and most differentially expressed genes
-    input = input[input['avg_log2FC'] > 0]
+    input = input[input['avg_log2FC'] > logfc_threshold]
     processed_input = {}
     for cluster in input['cluster'].unique():
             cluster_genes = input[input['cluster'] == cluster]['gene']
