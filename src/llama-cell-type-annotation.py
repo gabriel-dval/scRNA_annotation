@@ -65,11 +65,12 @@ def list_to_csv(data: List[str], output_file: str) -> None:
 # Main function
 
 def huggingchatcelltype(
-    input: Union[pd.DataFrame, Dict[str, List[str]]],
+    input: Union[str, Dict[str, List[str]]],
     output_dir: str = 'results',
     model: int = 0,
     tissuename: str = None,
-    topgenenumber: int = 10,
+    topgenenumber: int = 20,
+    logfc_threshold: float = 0,
     add_info: str = None,
     username: str = None,
     password: str = None
@@ -79,8 +80,8 @@ def huggingchatcelltype(
     
     Parameters:
     -----------
-    input : Union[pd.DataFrame, Dict[str, List[str]]]
-        Either a Seurat-style differential gene DataFrame or a dictionary of gene lists
+    input : Union[str, Dict[str, List[str]]]
+        Either the path to a csv file or a dictionary of gene lists
     output_dir : str, default 'results'
         Directory to save the results
     model : int
@@ -88,7 +89,9 @@ def huggingchatcelltype(
     tissuename : str, optional
         Name of the tissue being analyzed
     topgenenumber : int, default 10
-        Number of top differential genes to use if input is a DataFrame
+        Number of top differential genes to use if input is a csv
+    logfc_threshold : float
+        Log Fold-Change threshold for significance.
     add_info : str, optional
         Additional context to help with cell type identification
     username : str, optional
@@ -117,15 +120,13 @@ def huggingchatcelltype(
         print('Dictionnary input detected - make sure values are comma-separated gene lists')
         processed_input = input
         topgenenumber = list(test.values())[0].count(',') + 1
-    elif isinstance(input, pd.DataFrame):
-        # If input is a DataFrame, filter significant genes and get top genes per cluster
-        input = input[input['avg_log2FC'] > 0]
-        processed_input = {}
-        for cluster in input['cluster'].unique():
-            cluster_genes = input[input['cluster'] == cluster]['gene']
-            processed_input[cluster] = ','.join(cluster_genes[:topgenenumber])
+    elif isinstance(input, str):
+        # If input is a string, filter significant genes and get top genes per cluster
+        processed_input = seuratmarker_to_dict(input, 
+                                               topgenenumber=topgenenumber, 
+                                               logfc_threshold=logfc_threshold)
     else:
-        raise ValueError("Input must be a pandas DataFrame or a dictionary of gene lists")
+        raise ValueError("Input must be a string path to a csv or a dictionary of gene lists")
     
     # Construct prompt
     prompt = (
@@ -133,14 +134,6 @@ def huggingchatcelltype(
         "Each row corresponds to one cluster. "
         "Only provide the cell type name. Do not show cluster numbers before the cell type name. "
         "Some could be a mixture of multiple cell types. "
-        f"{add_info or ''}\n" +
-        "\n".join([f"{cluster} : {genes}" for cluster, genes in processed_input.items()])
-    )
-
-    prompt_two = (
-        f'Identify cell types of {tissuename} cells using the following markers separately for each\n row.' 
-        'Only provide the cell type name. Do not show numbers before the name.\n ' 
-        'Some could be a mixture of multiple cell types.'
         f"{add_info or ''}\n" +
         "\n".join([f"{cluster} : {genes}" for cluster, genes in processed_input.items()])
     )
@@ -185,7 +178,7 @@ def huggingchatcelltype(
         
         
         print('\nAnnotation done !')
-        print('Note: It is always recommended to check the results returned by this function in case of AI hallucination, before proceeding with downstream analysis.')
+        print('ALWAYS check the results returned by this function in case of AI hallucination, before proceeding with downstream analysis.')
         
         model_name = available[model].name.split('/', 1)[-1]
         list_to_csv(cell_type_annotations, f'{output_dir}/{tissuename}_{model_name}_{topgenenumber}markergenes_annotation.csv')
