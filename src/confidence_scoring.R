@@ -19,6 +19,9 @@ library(RColorBrewer)
 library(ggplot2)
 library(wordcloud)
 library(grid)
+library(Seurat)
+library(SeuratDisk)
+library(SeuratData)
 
 # Load annotations and original data
 load('../data/rdata_cp/CP_base_data.RData')  
@@ -235,6 +238,111 @@ View(as.data.frame(annotations))
 
 
 
+
+
+###############################################################################
+# C - Look at wordcloud of ref datasets #######################################
+###############################################################################
+
+# Original dataset
+load('../data/rdata_sbm/BoneMarrow_data_2025.RData') # SBM
+Immune_norm <- LoadH5Seurat('../data/raw_sbm/manual_annot.h5seurat')
+wf_manual <- table(Immune_norm@meta.data$cluster_annot)
+wf_manual <- as.data.frame(wf_manual)
+colnames(wf_manual) <- c('Label', 'Count')
+wf_manual$Label <- sub("s$", "", as.character(wf_manual$Label))
+
+
+# Load all the different labels of reference datasets
+# FACS
+labels <- read_tsv(file = '../data/ref_sbm/mATLAS_Marrow_facs_10x/cluster_names.tsv',
+                   col_names = F)
+clean_labels_facs <- sub(".*_", "", labels$X1) %>% as.data.frame()
+wf_facs <- table(clean_labels_facs)
+wf_facs <- as.data.frame(wf_facs)
+colnames(wf_facs) <- c('Label', 'Count')
+wf_facs$Label <- sub("s$", "", as.character(wf_facs$Label))
+
+
+# Droplet
+labels_droplet <- read_tsv(file = paste('../data/ref_sbm/mATLAS_Marrow_droplet_10x/',
+                                        'cluster_names.tsv', sep = ''),
+                           col_names = F)
+clean_labels_droplet <- sub(".*_", "", labels_droplet$X1) %>% as.data.frame()
+wf_droplet <- table(clean_labels_droplet)
+wf_droplet <- as.data.frame(wf_droplet)
+colnames(wf_droplet) <- c('Label', 'Count')
+wf_droplet$Label <- sub("s$", "", as.character(wf_droplet$Label))
+
+
+# PangLao
+ref_clusters <- read.table(paste('../data/ref_sbm/PangLao_DB_SRA653146/',
+                                 'SRA653146.clusters.txt', sep = ''), sep = ' ')
+
+ref_cluster_annotations <- c(
+  '0' =	'Hematopoietic stem cells',
+  '1' =	'B cells',
+  '2' = 'Neutrophils',
+  '3' = 'B cells',
+  '4' = 'Hematopoietic stem cells',
+  '5' = 'Neutrophils',
+  '6' = 'B cells',
+  '7' = 'Macrophages',
+  '8' = 'Hematopoietic stem cells',
+  '9' = 'Neutrophils',
+  '10' = 	'B cells',
+  '11' = 	'T memory cells',
+  '12' = 	'Plasmacytoid dendritic cells',
+  '13' = 	'Dendritic cells',
+  '14' = 	'Unknown',
+  '15' = 	'T memory cells',
+  '16' = 	'Basophils',
+  '17' = 	'B cells',
+  '18' = 	'B cells'
+)
+
+labels_panglao <- ref_cluster_annotations[as.character(ref_clusters$V2)] %>% 
+  as.data.frame()
+wf_panglao <- table(labels_panglao)
+wf_panglao <- as.data.frame(wf_panglao)
+colnames(wf_panglao) <- c('Label', 'Count')
+wf_panglao$Label <- sub("s$", "", as.character(wf_panglao$Label))
+
+
+# CellXGene
+labels_cellxgene <- read_tsv(file=paste('../data/ref_sbm/BoneMarrow_multi_assay_10x/',
+                                          'cluster_names.tsv', sep = ''),
+                             col_names = F) %>% as.data.frame()
+wf_cellxgene <- table(labels_cellxgene)
+wf_cellxgene <- as.data.frame(wf_cellxgene)
+colnames(wf_cellxgene) <- c('Label', 'Count')
+wf_cellxgene$Label <- sub("s$", "", as.character(wf_cellxgene$Label))
+
+
+# Tabula Muris
+annot_tm <- read_csv('../data/ref_sbm/TM_facs/annotations_FACS.csv')
+annot_tm <- annot_tm[annot_tm[,22] == 'Marrow', ]
+tm_labels <- annot_tm$cell_ontology_class
+wf_tm <- table(tm_labels)
+wf_tm <- as.data.frame(wf_tm)
+colnames(wf_tm) <- c('Label', 'Count')
+wf_tm$Label <- sub("s$", "", as.character(wf_tm$Label))
+
+
+
+wordcloud(words = word_frequency$Label, freq = word_frequency$Count, min.freq = 5, 
+          scale = c(3,0.5), colors = brewer.pal(8, "Dark2"))
+
+
+
+# Find common annotations
+common <- intersect(tolower(wf_manual$Label), tolower(wf_s$Label))
+
+
+common <- Reduce(intersect, list(tolower(wf_manual$Label), 
+                                 tolower(wf_droplet$Label),
+                       tolower(wf_facs$Label), tolower(wf_panglao$Label),
+                       tolower(wf_cellxgene$Label), tolower(wf_tm$Label)))
 
 
 
