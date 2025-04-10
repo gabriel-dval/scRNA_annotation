@@ -238,9 +238,10 @@ if __name__ == '__main__':
     #data = pd.read_csv( '../data/raw_sbm/split_data/log_immune_norm_batch1.csv')
     #print(data.loc[:,'Unnamed: 0'])
 
-    convert_nonblack_to_white('../../Desktop/small_mouse_brain.jpg', '../../Desktop/small_mouse_brain_white.jpg')
-    convert_nonblack_to_transparent('../../Desktop/small_mouse_brain_white.jpg', '../../Desktop/small_mouse_brain_transparent.png', )
-    thicken_lines('../../Desktop/small_mouse_brain_transparent.png', '../../Desktop/small_mouse_brain_transparent_thickened.png', 3)
+    for i in range(4):
+        convert_nonblack_to_white(f'../../Desktop/{i+1}.jpeg', f'../../Desktop/{i+1}_white.jpeg')
+        convert_nonblack_to_transparent(f'../../Desktop/{i+1}_white.jpeg', f'../../Desktop/{i+1}_transparent.png', )
+        thicken_lines(f'../../Desktop/{i+1}_transparent.png', f'../../Desktop/{i+1}_transparent_thickened.png', 3)
  
   
     
