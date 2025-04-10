@@ -5,7 +5,9 @@ methods.
 
 import anndata
 import pandas as pd
+import numpy as np
 from PIL import Image
+import cv2
 
 import os
 from scipy.io import mmread, mmwrite
@@ -180,6 +182,35 @@ def convert_nonblack_to_transparent(image_path, output_path, threshold=50):
     image.save(output_path, "PNG")  # Save as PNG to preserve transparency
 
 
+def thicken_lines(input_path, output_path, thickness=3):
+    # Load image with alpha channel
+    img = Image.open(input_path).convert("RGBA")
+    img_np = np.array(img)
+    
+    # Separate channels
+    r, g, b, a = img_np[:, :, 0], img_np[:, :, 1], img_np[:, :, 2], img_np[:, :, 3]
+    
+    # Create a mask where white lines are (RGB = 255 and alpha > 0)
+    white_mask = (r == 255) & (g == 255) & (b == 255) & (a > 0)
+    
+    # Convert mask to uint8 image for OpenCV
+    mask_uint8 = np.uint8(white_mask) * 255
+
+    # Dilate (thicken) the white lines
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (thickness * 2 + 1, thickness * 2 + 1))
+    dilated_mask = cv2.dilate(mask_uint8, kernel)
+
+    # Create a new image with transparent background
+    new_img_np = np.zeros_like(img_np)
+    
+    # Set white color where dilated mask is present
+    new_img_np[dilated_mask > 0] = [255, 255, 255, 255]  # white with full opacity
+    
+    # Convert back to image and save
+    new_img = Image.fromarray(new_img_np, mode="RGBA")
+    new_img.save(output_path)
+
+
 if __name__ == '__main__':
     mtx = '../data/raw_sbm/raw_sbm_data_2024.11.15/matrix.mtx'
     genes = '../data/raw_sbm/raw_sbm_data_2024.11.15/genes.tsv'
@@ -207,7 +238,9 @@ if __name__ == '__main__':
     #data = pd.read_csv( '../data/raw_sbm/split_data/log_immune_norm_batch1.csv')
     #print(data.loc[:,'Unnamed: 0'])
 
-    #convert_nonblack_to_transparent('../../Desktop/mouse_brain_white.jpg', '../../Desktop/mouse_brain_transparent_2.png', )
+    convert_nonblack_to_white('../../Desktop/small_mouse_brain.jpg', '../../Desktop/small_mouse_brain_white.jpg')
+    convert_nonblack_to_transparent('../../Desktop/small_mouse_brain_white.jpg', '../../Desktop/small_mouse_brain_transparent.png', )
+    thicken_lines('../../Desktop/small_mouse_brain_transparent.png', '../../Desktop/small_mouse_brain_transparent_thickened.png', 3)
  
   
     
