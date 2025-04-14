@@ -330,13 +330,13 @@ wf_tm$Label <- sub("s$", "", as.character(wf_tm$Label))
 
 
 
-wordcloud(words = word_frequency$Label, freq = word_frequency$Count, min.freq = 5, 
+wordcloud(words = wf_manual$Label, freq = wf_manual$Count, min.freq = 5, 
           scale = c(3,0.5), colors = brewer.pal(8, "Dark2"))
 
 
 
 # Find common annotations
-common <- intersect(tolower(wf_manual$Label), tolower(wf_s$Label))
+common <- intersect(tolower(wf_manual$Label), tolower(wf_cellxgene$Label))
 
 
 common <- Reduce(intersect, list(tolower(wf_manual$Label), 
