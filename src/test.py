@@ -238,7 +238,7 @@ if __name__ == '__main__':
     #data = pd.read_csv( '../data/raw_sbm/split_data/log_immune_norm_batch1.csv')
     #print(data.loc[:,'Unnamed: 0'])
 
-    for i in range(4):
+    for i in range(1):
         convert_nonblack_to_white(f'../../Desktop/{i+1}.jpeg', f'../../Desktop/{i+1}_white.jpeg')
         convert_nonblack_to_transparent(f'../../Desktop/{i+1}_white.jpeg', f'../../Desktop/{i+1}_transparent.png', )
         thicken_lines(f'../../Desktop/{i+1}_transparent.png', f'../../Desktop/{i+1}_transparent_thickened.png', 3)

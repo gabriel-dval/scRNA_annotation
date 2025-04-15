@@ -22,6 +22,9 @@ library(grid)
 library(Seurat)
 library(SeuratDisk)
 library(SeuratData)
+library(SnowballC)
+library(tm)
+library(textstem)
 
 # Load annotations and original data
 load('../data/rdata_cp/CP_base_data.RData')  
@@ -35,7 +38,6 @@ gpt_annots <- read.table('results/cp_gptcelltype_annotations.csv', sep = ';')
 # V17 - V21 : 30 marker genes, LogFold > 0
 
 # First step - get all words in the annotation
-
 clean_words <- function(string_vec) {
   #' Convert a character vector into a vector of its component
   #' single words, in lower case and all punct/numbers removed.
@@ -55,12 +57,16 @@ clean_words <- function(string_vec) {
   
   # Convert to lowercase
   string_vec <- tolower(string_vec)
+  print(string_vec)
   
   # Replace separators (space, '/', and ',') with a single space
   string_vec <- gsub("[ /,]", " ", string_vec)
   
   # Remove any non-alphabetic characters EXCEPT spaces (preserve word boundaries)
-  string_vec <- gsub("[[:digit:][:punct:]]", "", string_vec)
+  string_vec <- gsub("[[:punct:]]", "", string_vec)
+  
+  # This regex looks for numbers that have space or boundary before and after them
+  string_vec <- gsub("(^|\\s)\\d+(\\s|$)", " ", string_vec)
   
   # Trim trailing whitespace
   single_words <- trimws(string_vec, whitespace = "[\\h\\v]")
@@ -74,7 +80,33 @@ clean_words <- function(string_vec) {
   return(single_words)
 }
 
+# Remove useless words
+remove_useless_words <- function(clean_word_vector) {
+  #' Function to eliminate numbers, useless words or any other
+  #' expression not useful to the cell type annotation (e.g : 
+  #' words with the same root such as neuron and neuronal)
+  #' 
+  #' Args
+  #' ----
+  #' clean_word_vector : character vector
+  #' 
+  #' Returns 
+  #' ------
+  #' useful_words : character vector
+  
+  # Filter out words that are only numeric
+  clean_word_vector <- clean_word_vector[!grepl("^\\d+$", clean_word_vector)]
+  
+  # Remove words that are not useful (e.g : 'cells')
+  clean_word_vector <- clean_word_vector[!(clean_word_vector %in% c("cell", 
+                                                                    "cells"))]
+  
+  # Remove common stopwords
+  stopwords <- tm::stopwords("en")
+  clean_word_vector <- clean_word_vector[!(clean_word_vector %in% stopwords)]
+}
 
+# Proportions
 calculate_proportions <- function(clean_word_vector) {
   #' Function to calculate the proportion of each word appearing in
   #' a phrase and plot a corresponding pie chart
@@ -86,10 +118,6 @@ calculate_proportions <- function(clean_word_vector) {
   #' Returns
   #' -------
   #' proportions : list of two - data.frame and graph object
-  
-  # Remove words that are not useful (e.g : 'cells')
-  clean_word_vector <- clean_word_vector[!(clean_word_vector %in% c("cell", 
-                                                                    "cells"))]
   
   # Calculate proportions of the vector
   word_frequency <- table(clean_word_vector)
@@ -118,19 +146,120 @@ calculate_proportions <- function(clean_word_vector) {
   
 }
 
+# Basic root
+same_root <- function(word1, word2) {
+  # Check if inputs are valid strings
+  if (!is.character(word1) || !is.character(word2) || 
+      length(word1) != 1 || length(word2) != 1) {
+    stop("Both inputs must be single character strings")
+  }
+  
+  # Load the SnowballC package
+  # Install if needed with: install.packages("SnowballC")
+  if (!requireNamespace("SnowballC", quietly = TRUE)) {
+    stop("The SnowballC package is required. Please install it with install.packages('SnowballC')")
+  }
+  
+  # Convert to lowercase
+  word1 <- tolower(word1)
+  word2 <- tolower(word2)
+  
+  # Use Porter stemming algorithm from SnowballC
+  stem1 <- SnowballC::wordStem(word1, language = "english")
+  stem2 <- SnowballC::wordStem(word2, language = "english")
+  
+  # Check if stems are the same
+  result <- stem1 == stem2
+  
+  cat("Word 1:", word1, "→ Stem:", stem1, "\n")
+  cat("Word 2:", word2, "→ Stem:", stem2, "\n")
+  
+  return(result)
+}
+
+# Lemmatization test
+same_root_lemma <- function(word1, word2) {
+  # Check if inputs are valid strings
+  if (!is.character(word1) || !is.character(word2) || 
+      length(word1) != 1 || length(word2) != 1) {
+    stop("Both inputs must be single character strings")
+  }
+  
+  # Convert to lowercase
+  word1 <- tolower(word1)
+  word2 <- tolower(word2)
+  
+  # Custom dictionary for scientific/biological terms
+  bio_lemma_dict <- list(
+    "epithelial" = "epithelium",
+    "neuronal" = "neuron",
+    "dendritic" = "dendrite",
+    "axonal" = "axon",
+    "glial" = "glia",
+    "astrocytic" = "astrocyte",
+    "myelinated" = "myelin",
+    "somatic" = "soma",
+    "endothelial" = "endothelium",
+    "mesenchymal" = "mesenchyme",
+    "cytoplasmic" = "cytoplasm",
+    "nuclear" = "nucleus",
+    "vascular" = "vasculature"
+  )
+  
+  # Helper function to get lemma
+  get_lemma <- function(word) {
+    if (word %in% names(bio_lemma_dict)) {
+      return(bio_lemma_dict[[word]])
+    }
+    
+    # Try to lemmatize with textstem if available
+    if (requireNamespace("textstem", quietly = TRUE)) {
+      lemmas <- textstem::lemmatize_words(word)
+      return(lemmas[1]) # Take first lemma if multiple returned
+    }
+    
+    # Fallback to Porter stemming if textstem not available
+    if (requireNamespace("SnowballC", quietly = TRUE)) {
+      return(SnowballC::wordStem(word, language = "english"))
+    }
+    
+    # If nothing else works, return the original word
+    return(word)
+  }
+  
+  # Get lemmas
+  lemma1 <- get_lemma(word1)
+  lemma2 <- get_lemma(word2)
+  
+  # Print for debugging/information
+  cat("Word 1:", word1, "→ Lemma:", lemma1, "\n")
+  cat("Word 2:", word2, "→ Lemma:", lemma2, "\n")
+  
+  # Check if lemmas are the same
+  return(lemma1 == lemma2)
+}
+
+
+# Test with the example
+test_input <- c("1. Map date", "Cartography/Illustration", "CD8 Map/date")
+test <- clean_words(test_input)
+
+
 
 # Test on a single row
-row_1 <- gpt_annots[37,2:21] %>%
-  unlist() %>%
-  as.vector()
+test <- clean_words(c(gpt_annots[37,2:21], 'CD8', ' and', 'with'))
+print(test)
+test <- remove_useless_words(test)
+print(test)
 
-test <- clean_words(row_1)
+
 prop_test <- calculate_proportions(test)
 prop_test
 
 
 # Now test function by applying it over matrix
 res <- apply(X = gpt_annots[,2:21], MARGIN = 1, FUN = clean_words)
+res <- lapply(X = res, FUN = remove_useless_words)
 res <- lapply(X = res, FUN = calculate_proportions)
 
 
@@ -169,15 +298,15 @@ select_annotation <- function(single_cluster_annot) {
     arrange(desc(Count))
   most_common <- as.character(props$Label[1])
   
-  if(single_cluster_annot$heterogeneity >= 8) {
-    differential_1 <- props$Label[2]
-    differential_2 <- props$Label[3]
-      most_common <- paste(most_common, differential_1, 
-                           differential_2, sep = ' + ')
-  }
-  
-  else if(single_cluster_annot$heterogeneity >= 2) {
-    differential <- props$Label[2]
+  if(single_cluster_annot$heterogeneity >= 2) {
+    differential <- as.character(props$Label[2])
+    print(most_common)
+    print(differential)
+    i <- 3
+    while(same_root_lemma(most_common, differential) == T) {
+      differential <- as.character(props$Label[i])
+      i <- i + 1
+    }
     most_common <- paste(most_common, differential, sep = ' + ')
   }
   
