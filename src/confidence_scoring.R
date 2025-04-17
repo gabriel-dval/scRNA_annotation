@@ -240,9 +240,111 @@ same_root_lemma <- function(word1, word2) {
 }
 
 
-# Test with the example
-test_input <- c("1. Map date", "Cartography/Illustration", "CD8 Map/date")
-test <- clean_words(test_input)
+###############################################################################
+# Alternatively
+
+find_most_common_expression <- function(expressions, ignore_case = TRUE,
+                                        standardize_punctuation = TRUE,
+                                        standardize_plural = TRUE,
+                                        standardize_conjunctions = TRUE) {
+  
+  # Input validation
+  if(!is.vector(expressions) || !is.character(expressions)) {
+    if (is.list(expressions)) {
+      expressions <- as.character(expressions)
+    } else {
+      stop('Incorrect input format - character vector or list only')
+    }
+  }
+  
+  if(length(expressions) == 0) {
+    return(NULL)
+  }
+  
+  # Create a clean version of the expressions for normalization
+  clean_expressions <- expressions
+  
+  # Apply case normalization if requested
+  if(ignore_case) {
+    clean_expressions <- tolower(clean_expressions)
+  }
+  
+  # Standardize punctuation if requested
+  if(standardize_punctuation) {
+    # Replace slashes and plus signs with spaces
+    clean_expressions <- gsub("/|\\+", " ", clean_expressions)
+    # Remove other punctuation
+    clean_expressions <- gsub("[[:punct:]]", "", clean_expressions)
+  }
+  
+  # Replace multiple spaces with single space
+  clean_expressions <- gsub("\\s+", " ", clean_expressions)
+  
+  # Trim leading and trailing whitespace
+  clean_expressions <- trimws(clean_expressions)
+  
+  # Standardize plurals if requested
+  if(standardize_plural) {
+    # Function to selectively remove trailing 's' from words
+    remove_plural <- function(str) {
+      words <- unlist(strsplit(str, " "))
+      words <- ifelse(nchar(words) > 2 & substr(words, nchar(words), nchar(words)) == "s", 
+                      substr(words, 1, nchar(words)-1), 
+                      words)
+      paste(words, collapse = " ")
+    }
+    
+    clean_expressions <- sapply(clean_expressions, remove_plural)
+  }
+  
+  # Standardize conjunctions if requested
+  if(standardize_conjunctions) {
+    # Replace variations of "and" and "or" with a standard form
+    clean_expressions <- gsub(" and | & ", " and ", clean_expressions)
+    clean_expressions <- gsub(" or ", " or ", clean_expressions)
+    
+    # Optionally, completely remove conjunctions to group similar expressions
+    # Uncomment the line below if you want to remove conjunctions entirely
+    # clean_expressions <- gsub(" and | & | or ", " ", clean_expressions)
+    
+    # Replace multiple spaces again after conjunction standardization
+    clean_expressions <- gsub("\\s+", " ", clean_expressions)
+    clean_expressions <- trimws(clean_expressions)
+  }
+  
+  # Count the standardized expressions
+  expr_counts <- table(clean_expressions)
+  
+  # Find the most common expression(s)
+  max_count <- max(expr_counts)
+  most_common_expr <- names(expr_counts)[expr_counts == max_count]
+  
+  # Map back to the original expressions to maintain original formatting
+  # Create a mapping from clean expressions to original expressions
+  expr_mapping <- data.frame(
+    original = expressions,
+    clean = clean_expressions,
+    stringsAsFactors = FALSE
+  )
+  
+  # Find all original expressions that match the most common clean expression
+  matching_originals <- expr_mapping$original[expr_mapping$clean == most_common_expr[1]]
+  
+  # Return the first one (or you could return all matches)
+  return(list(
+    expression = matching_originals[1],
+    normalized = most_common_expr[1],
+    count = max_count,
+    all_matches = matching_originals
+  ))
+}
+
+
+###############################################################################
+# Test these functions
+
+# Test alternative function
+test <- find_most_common_expression(res[31, -1])
 
 
 
@@ -472,6 +574,22 @@ common <- Reduce(intersect, list(tolower(wf_manual$Label),
                                  tolower(wf_droplet$Label),
                        tolower(wf_facs$Label), tolower(wf_panglao$Label),
                        tolower(wf_cellxgene$Label), tolower(wf_tm$Label)))
+
+
+
+
+
+
+
+
+
+
+
+
+###############################################################################
+# D - Build heatmap of results per cluster ####################################
+###############################################################################
+
 
 
 
