@@ -669,5 +669,5 @@ p <- ggplot(heatmap_long, aes(x = Column, y = Row, fill = Value)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # Convert to plotly
-ggplotly(p)
-
+plotly_figure <- ggplotly(p)
+saveWidget(plotly_figure, 'cp_cluster_heatmap.html')
