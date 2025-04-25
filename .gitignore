@@ -1,7 +1,7 @@
 data/
 .DS_store
 src/scGPT/
-results/
+results*
 *.tar.gz
 src/annotate.R
 output*
