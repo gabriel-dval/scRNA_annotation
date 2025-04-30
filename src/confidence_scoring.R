@@ -671,3 +671,215 @@ p <- ggplot(heatmap_long, aes(x = Column, y = Row, fill = Value)) +
 # Convert to plotly
 plotly_figure <- ggplotly(p)
 saveWidget(plotly_figure, 'cp_cluster_heatmap.html')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###############################################################################
+# E - Prep new datasets to test  ##############################################
+###############################################################################
+library(MAST)
+
+
+# Tabula Muris Brain Myeloid cells ############################################
+
+# Load reference data in tsv format
+#load('../data/ref_sbm/TM_facs_Marrow_seurat_tiss.Robj')
+#tiss <- UpdateSeuratObject(tiss)
+ref_tm <- read_csv('../data/ref_sbm/TM_facs/Brain_Myeloid-counts.csv')
+# Convert first column to row names
+ref_tm <- column_to_rownames(ref_tm, var = colnames(ref_tm)[1])
+# 5355 observations
+
+# Load corresponding annotations and subset tissue of interest
+# as well as cells present in the expression matrix
+annot_tm <- read_csv('../data/ref_sbm/TM_facs/annotations_FACS.csv')
+table(annot_tm$tissue)
+annot_tm <- annot_tm[annot_tm[,22] == 'Brain_Myeloid', ]
+
+# Set cells as rownames and remove NA values
+annot_tm <- column_to_rownames(annot_tm, var = colnames(annot_tm)[3])
+annot_tm <- annot_tm %>% select(where(~ !any(is.na(.))))
+
+# Match cells in both annotation and expression matrix
+common_rows <- intersect(rownames(annot_tm), colnames(ref_tm))
+
+# Subset expression matrix to keep only annotated cells
+ref_tm <- ref_tm[, common_rows, drop = FALSE]
+
+
+# Create final seurat object
+tm_brain_myeloid <- CreateSeuratObject(counts = ref_tm, meta.data = annot_tm)
+
+# Count normalisation steps
+tm_brain_myeloid <- NormalizeData(tm_brain_myeloid) # Only need this step
+tm_brain_myeloid <- FindVariableFeatures(tm_brain_myeloid, nfeatures = 3000)
+tm_brain_myeloid <- ScaleData(tm_brain_myeloid)
+
+# Run UMAP
+tm_brain_myeloid <- RunPCA(tm_brain_myeloid)
+tm_brain_myeloid <- FindNeighbors(tm_brain_myeloid)
+tm_brain_myeloid <- RunUMAP(tm_brain_myeloid, dims = 1:50)
+
+DimPlot(tm_brain_myeloid, reduction = 'umap', label = TRUE, 
+        group.by = 'cluster.ids',
+        pt.size = 0.4, shuffle = T, seed = 44, label.box = T, repel = T, 
+        label.size = 4, label.color = 'black', alpha = 0.75) + NoLegend() +
+  ggtitle('Tabula Muris Myeloid Brain')
+
+#table(tm_obj@meta.data$cluster.ids)
+#table(tm_obj@meta.data$subtissue)
+table(annot_tm$cell_ontology_class)
+
+
+
+# mATLAS FACS Brain myeloid cells #############################################
+
+# Convert files by reading 10X
+brain_myeloid <- Read10X(data.dir = '../data/test_datasets/mATLAS_Brain_Myeloid_facs',
+                    gene.column = 1)
+
+# Load corresponding annotations
+brain_myeloid_labels <- read_tsv(file = '../data/test_datasets/mATLAS_Brain_Myeloid_facs/cluster_names.tsv',
+                   col_names = F) %>%
+                   as.data.frame()
+rownames(brain_myeloid_labels) <- colnames(brain_myeloid)
+
+# Load corresponding clusters
+brain_myeloid_clusters <- read_tsv(file = '../data/test_datasets/mATLAS_Brain_Myeloid_facs/cluster_numbers.tsv',
+                                 col_names = F) %>%
+  as.data.frame()
+rownames(brain_myeloid_clusters) <- colnames(brain_myeloid)
+
+# Join information
+brain_myeloid_info <- cbind(brain_myeloid_labels, brain_myeloid_clusters)
+names(brain_myeloid_info) <- c('Annotation', 'Cluster')
+
+
+# Generate UMAP of reference data
+toc = CreateSeuratObject(counts = brain_myeloid, 
+                         meta.data = brain_myeloid_info,
+                         assay = 'RNA')
+
+toc = FindVariableFeatures(toc, nfeatures = 3000)
+toc = ScaleData(toc, layer = 'counts') # Counts are already log norm
+toc = RunPCA(toc, verbose = F)
+toc = RunUMAP(toc, dims = 1:40, verbose = F)
+
+# Plot UMAP
+DimPlot(toc, reduction = 'umap', label = TRUE, group.by = 'Cluster',
+        pt.size = 0.4, shuffle = T, label.box = T, repel = T, 
+        label.size = 4, label.color = 'black', alpha = 0.75) + NoLegend() +
+  ggtitle('mATLAS Brain Myeloid FACS ')
+
+DimPlot(toc, reduction = 'umap', label = TRUE, group.by = 'Annotation',
+        pt.size = 0.4, shuffle = T, label.box = T, repel = T, 
+        label.size = 4, label.color = 'black', alpha = 0.75) + NoLegend() +
+  ggtitle('mATLAS Brain Myeloid FACS ')
+
+toc.markers <- FindAllMarkers(toc, group.by = 'Cluster', test.use = 'MAST',
+                              only.pos = T)
+toc.markers$cluster <- as.numeric(toc.markers$cluster)
+
+# Change clusters into numerics as well and add 1 to remove cluster 0
+toc@meta.data$Cluster <- toc@meta.data$Cluster + 1
+
+# Rename Idents accordingly
+Idents(toc) <- 'Cluster'
+
+# Save resulting RData
+save(toc, toc.markers, file = '../data/test_datasets/mATLAS_Brain_Myeloid.RData')
+
+
+load('../data/test_datasets/mATLAS_Brain_Myeloid.RData')
+
+
+# mATLAS FACS Lung cells ######################################################
+
+# Convert files by reading 10X
+lung <- Read10X(data.dir = '../data/test_datasets/mATLAS_Lung',
+                         gene.column = 1)
+
+# Load corresponding annotations
+lung_labels <- read_tsv(file = '../data/test_datasets/mATLAS_Lung/cluster_names.tsv',
+                                 col_names = F) %>%
+  as.data.frame()
+rownames(lung_labels) <- colnames(lung)
+
+# Load corresponding clusters
+lung_clusters <- read_tsv(file = '../data/test_datasets/mATLAS_Lung/cluster_numbers.tsv',
+                                   col_names = F) %>%
+  as.data.frame()
+rownames(lung_clusters) <- colnames(lung)
+
+# Join information
+lung_info <- cbind(lung_labels, lung_clusters)
+names(lung_info) <- c('Annotation', 'Cluster')
+
+
+# Generate UMAP of reference data
+toc = CreateSeuratObject(counts = lung, 
+                         meta.data = lung_info,
+                         assay = 'RNA')
+
+toc = FindVariableFeatures(toc, nfeatures = 3000)
+toc = ScaleData(toc, layer = 'counts') # Counts are already log norm
+toc = RunPCA(toc, verbose = F)
+toc = RunUMAP(toc, dims = 1:40, verbose = F)
+
+# Plot UMAP
+DimPlot(toc, reduction = 'umap', label = TRUE, group.by = 'Cluster',
+        pt.size = 0.4, shuffle = T, label.box = T, repel = T, 
+        label.size = 4, label.color = 'black', alpha = 0.75) + NoLegend() +
+  ggtitle('mATLAS Lung Droplet ')
+
+DimPlot(toc, reduction = 'umap', label = TRUE, group.by = 'Annotation',
+        pt.size = 0.4, shuffle = T, label.box = T, repel = T, 
+        label.size = 4, label.color = 'black', alpha = 0.75) + NoLegend() +
+  ggtitle('mATLAS Lung Droplet ')
+
+toc.markers <- FindAllMarkers(toc, group.by = 'Cluster', test.use = 'MAST',
+                              only.pos = T)
+toc.markers$cluster <- as.numeric(toc.markers$cluster)
+
+# Change clusters into numerics as well and add 1 to remove cluster 0
+toc@meta.data$Cluster <- toc@meta.data$Cluster + 1
+
+# Rename Idents accordingly
+Idents(toc) <- 'Cluster'
+
+# Save resulting RData
+save(toc, toc.markers, file = '../data/test_datasets/mATLAS_Lung_Droplet.RData')
+
+#ggsave('results/mATLAS_facs_umap.pdf')
+
+
+
+clust <- toc@meta.data$Cluster
+scmap_clusters <- cbind(clust, 
+                        toc@meta.data$Annotation) %>%
+  as.data.frame() %>%
+  group_by(clust) %>%
+  summarise(Annotation = names(sort(table(V2), decreasing = TRUE)[1])) %>%
+  as.data.frame() 
+scmap_clusters$clust <- as.numeric(scmap_clusters$clust)
+scmap_clusters <- arrange(scmap_clusters, clust)
+
+View(as.data.frame(annotations))
+
+
+
+
+
+
+
