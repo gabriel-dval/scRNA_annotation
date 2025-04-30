@@ -218,17 +218,21 @@ if __name__ == '__main__':
     output_file = '../data/raw_sbm/raw_sbm_data_2024.11.15/adata.h5ad'
     #convert_mtx_to_h5ad(mtx, genes, barcodes, output_file)
 
-    # Test extract_gem_data
-    #ref_file = '../data/ref_sbm/BoneMarrow_multi_assay.h5ad'
-    #res = extract_gem_data(ref_file, '../data/ref_sbm/mATLAS_Marrow_droplet_10x')
-    #adata = anndata.read_h5ad(ref_file)
-    # Filter the AnnData object to keep only cells from 'Bone Marrow'
-    #bone_marrow_cells = adata[adata.obs['tissue'] == 'bone marrow']
-    # Now extract only this bone marrow data
-    #res = extract_gem_data(bone_marrow_cells, '../data/ref_sbm/BoneMarrow_multi_assay_10x')
-    #bone_marrow_cells.obs['cell_type'].to_csv(os.path.join('../data/ref_sbm/BoneMarrow_multi_assay_10x', 
-                                             #"cluster_names.tsv"), 
-                                             #sep="\t", index=False, header=False)
+    #Test extract_gem_data
+    ref_file = '../data/test_datasets/Lung_droplet.h5ad'
+    #res = extract_gem_data(ref_file, '../data/test_datasets/mATLAS_Brain_Myeloid_facs')
+    adata = anndata.read_h5ad(ref_file)
+    print(adata)
+    #Filter the AnnData object to keep only cells from 'Bone Marrow'
+    #Now extract only this bone marrow data
+    res = extract_gem_data(ref_file, '../data/test_datasets/mATLAS_Lung')
+    adata.obs['cell_ontology_class'].to_csv(os.path.join('../data/test_datasets/mATLAS_Lung', 
+                                             "cluster_names.tsv"), 
+                                             sep="\t", index=False, header=False)
+    adata.obs['leiden'].to_csv(os.path.join('../data/test_datasets/mATLAS_Lung', 
+                                             "cluster_numbers.tsv"), 
+                                             sep="\t", index=False, header=False)
+    
 
     # Split the dataset
     # split_csv_dataset('../data/raw_sbm/log_immune_norm.csv', 
@@ -238,10 +242,10 @@ if __name__ == '__main__':
     #data = pd.read_csv( '../data/raw_sbm/split_data/log_immune_norm_batch1.csv')
     #print(data.loc[:,'Unnamed: 0'])
 
-    for i in range(1):
-        convert_nonblack_to_white(f'../../Desktop/{i+1}.jpeg', f'../../Desktop/{i+1}_white.jpeg')
-        convert_nonblack_to_transparent(f'../../Desktop/{i+1}_white.jpeg', f'../../Desktop/{i+1}_transparent.png', )
-        thicken_lines(f'../../Desktop/{i+1}_transparent.png', f'../../Desktop/{i+1}_transparent_thickened.png', 3)
+    # for i in range(1):
+    #     convert_nonblack_to_white(f'../../Desktop/{i+1}.jpeg', f'../../Desktop/{i+1}_white.jpeg')
+    #     convert_nonblack_to_transparent(f'../../Desktop/{i+1}_white.jpeg', f'../../Desktop/{i+1}_transparent.png', )
+    #     thicken_lines(f'../../Desktop/{i+1}_transparent.png', f'../../Desktop/{i+1}_transparent_thickened.png', 3)
  
   
     
