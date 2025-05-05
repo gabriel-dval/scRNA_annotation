@@ -29,7 +29,7 @@ library(textstem)
 # Load annotations and original data
 load('../data/rdata_cp/CP_base_data.RData')  
 load('../data/rdata_sbm/BoneMarrow_data_2025.RData') # SBM
-gpt_annots <- read.table('output_sbm_2/gptcelltype_annots.csv', sep = ',')
+gpt_annots <- read.table('output_sbm_mastmarkers/gptcelltype_annots.csv', sep = ',')
 gpt_annots <- gpt_annots[-1,-1]
 rownames(gpt_annots) <- NULL
 colnames(gpt_annots) <- NULL
@@ -341,6 +341,11 @@ find_most_common_expression <- function(expressions, ignore_case = TRUE,
     all_matches = matching_originals
   ))
 }
+
+
+
+
+
 
 
 ###############################################################################
@@ -684,9 +689,130 @@ saveWidget(plotly_figure, 'cp_cluster_heatmap.html')
 
 
 
+###############################################################################
+# E - Build table of results per cluster ######################################
+###############################################################################
+library(gt)
+
+
+get_all_expressions <- function(expressions, ignore_case = TRUE,
+                                         standardize_punctuation = TRUE,
+                                         standardize_plural = TRUE,
+                                         standardize_conjunctions = TRUE) {
+  
+  # Input validation
+  if (!is.vector(expressions) || !is.character(expressions)) {
+    if (is.list(expressions)) {
+      expressions <- as.character(expressions)
+    } else {
+      stop('Incorrect input format - character vector or list only')
+    }
+  }
+  
+  if (length(expressions) == 0) {
+    return(NULL)
+  }
+  
+  # Create a clean version of the expressions for normalization
+  clean_expressions <- expressions
+  
+  if (ignore_case) {
+    clean_expressions <- tolower(clean_expressions)
+  }
+  
+  if (standardize_punctuation) {
+    clean_expressions <- gsub("/|\\+", " ", clean_expressions)
+    clean_expressions <- gsub("[[:punct:]]", "", clean_expressions)
+  }
+  
+  clean_expressions <- gsub("\\s+", " ", clean_expressions)
+  clean_expressions <- trimws(clean_expressions)
+  
+  if (standardize_plural) {
+    remove_plural <- function(str) {
+      words <- unlist(strsplit(str, " "))
+      words <- ifelse(nchar(words) > 2 & substr(words, nchar(words), nchar(words)) == "s", 
+                      substr(words, 1, nchar(words)-1), 
+                      words)
+      paste(words, collapse = " ")
+    }
+    clean_expressions <- sapply(clean_expressions, remove_plural)
+  }
+  
+  if (standardize_conjunctions) {
+    clean_expressions <- gsub(" and | & ", " and ", clean_expressions)
+    clean_expressions <- gsub(" or ", " or ", clean_expressions)
+    clean_expressions <- gsub(" and | & | or ", " ", clean_expressions)
+    clean_expressions <- gsub("\\s+", " ", clean_expressions)
+    clean_expressions <- trimws(clean_expressions)
+  }
+  
+  expr_counts <- table(clean_expressions)
+  
+  if (length(expr_counts) == 0) {
+    return(NULL)
+  }
+  
+  # Filter to keep only expressions with count >= 2
+  filtered_exprs <- expr_counts[expr_counts > 1]
+  
+  if (length(filtered_exprs) == 0) {
+    return(NULL)
+  }
+  
+  # Map clean expressions back to their original variants
+  expr_mapping <- data.frame(
+    original = expressions,
+    clean = clean_expressions,
+    stringsAsFactors = FALSE
+  )
+  
+  results <- lapply(names(filtered_exprs), function(expr) {
+    matching_originals <- expr_mapping$original[expr_mapping$clean == expr]
+    list(
+      expression = matching_originals[1],
+      normalized = expr,
+      count = filtered_exprs[expr],
+      all_matches = matching_originals
+    )
+  })
+  
+  # Now extract the expressions and counts and sort them
+  expressions_vector <- sapply(results, function(x) x$expression)
+  counts_vector <- sapply(results, function(x) x$count)
+  
+  # Create a data frame to sort by counts
+  sorted_df <- data.frame(
+    expression = expressions_vector,
+    count = counts_vector,
+    stringsAsFactors = FALSE
+  )
+  
+  # Sort by count in descending order
+  sorted_df <- sorted_df[order(sorted_df$count, decreasing = TRUE), ]
+  
+  # Return only the sorted expressions
+  sorted_results <- sorted_df$expression
+  
+  return(sorted_results)
+  
+  return(results)
+}
+
+
+# Get all sorted expressions
+post_res <- apply(X = gpt_annots, MARGIN = 1, FUN = get_all_expressions)
+
+
+# Make table with this
+test <- as.data.frame(post_res)
+
+
+
+
 
 ###############################################################################
-# E - Prep new datasets to test  ##############################################
+# F - Prep new datasets to test  ##############################################
 ###############################################################################
 library(MAST)
 
@@ -801,7 +927,8 @@ Idents(toc) <- 'Cluster'
 save(toc, toc.markers, file = '../data/test_datasets/mATLAS_Brain_Myeloid.RData')
 
 
-load('../data/test_datasets/mATLAS_Brain_Myeloid.RData')
+
+
 
 
 # mATLAS FACS Lung cells ######################################################
