@@ -805,9 +805,96 @@ post_res <- apply(X = gpt_annots, MARGIN = 1, FUN = get_all_expressions)
 
 
 # Make table with this
-test <- as.data.frame(post_res)
+pad_and_combine_vectors <- function(vector_list) {
+  # Find the maximum length among all vectors
+  max_length <- max(sapply(vector_list, length))
+  
+  # Pad each vector with 'None' to match the max length
+  padded_vectors <- lapply(vector_list, function(vec) {
+    if (length(vec) < max_length) {
+      # Calculate how many 'None' values to add
+      padding_needed <- max_length - length(vec)
+      # Append 'None'
+      c(vec, rep('None', padding_needed))
+    } else {
+      vec
+    }
+  })
+  
+  # Convert the list of padded vectors to a data frame
+  result_df <- as.data.frame(do.call(cbind, padded_vectors))
+  
+  # Add column names
+  if (is.null(names(vector_list))) {
+    colnames(result_df) <- paste0("Cluster ", 1:length(vector_list))
+  } else {
+    colnames(result_df) <- names(vector_list)
+  }
+  
+  # Add rownames
+  rownames(result_df) <- paste0("Option ", 1:max_length)
+  
+  return(result_df)
+}
 
 
+test <- pad_and_combine_vectors(post_res) %>%
+  t() %>%
+  as.data.frame() %>%
+  rownames_to_column(var = 'Model')
+
+
+
+# Now plot the table
+test_table <- gt(test) %>%
+  
+  # Make first row (header) and first column bold
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = list(
+      cells_column_labels(everything()),
+      cells_body(columns = 1)
+    )
+  ) %>%
+  
+  # Shade the header row and first column
+  tab_style(
+    style = cell_fill(color = "grey90"),
+    locations = list(
+      cells_column_labels(everything()),
+      cells_body(columns = 1)
+    )
+  ) %>%
+  
+  # Smaller font
+  tab_style(
+    style = cell_text(size = "small"),
+    locations = cells_body(columns = everything())
+  ) %>%
+  
+  # Align all numeric columns to the right
+  cols_align(align = "right", columns = where(is.numeric)) %>%
+  
+  # Add table title and customize fonts
+  tab_options(
+    table.font.names = c("Arial", "Helvetica", "sans-serif"),
+    table.border.top.width = px(2),
+    table.border.bottom.width = px(2),
+    table.border.top.color = "black",
+    table.border.bottom.color = "black",
+    column_labels.font.weight = "bold",
+    heading.align = "left"
+  ) %>%
+  
+  tab_header(
+    title = "Annotation options"
+  )
+
+
+
+
+# Save
+gtsave(test_table, 'test.html')
 
 
 
@@ -866,6 +953,9 @@ DimPlot(tm_brain_myeloid, reduction = 'umap', label = TRUE,
 #table(tm_obj@meta.data$cluster.ids)
 #table(tm_obj@meta.data$subtissue)
 table(annot_tm$cell_ontology_class)
+
+
+
 
 
 
@@ -1007,6 +1097,16 @@ View(as.data.frame(annotations))
 
 
 
+
+
+
+
+
+
+# SeuratData files #############################################################
+library(Seurat)
+
+mmc <- readRDS('../data/test_datasets/MMC/allen_mop_2020.rds')
 
 
 
