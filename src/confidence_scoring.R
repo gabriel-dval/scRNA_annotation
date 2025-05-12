@@ -1103,10 +1103,66 @@ View(as.data.frame(annotations))
 
 
 
-# SeuratData files #############################################################
+# Mouse Motor Cortex ###########################################################
 library(Seurat)
+library(ggplot2)
+library(MAST)
 
+# Load dataset
 mmc <- readRDS('../data/test_datasets/MMC/allen_mop_2020.rds')
 
+# Calculate dim reduction
+mmc <- FindVariableFeatures(mmc)
+mmc <- ScaleData(mmc)
+mmc <- RunPCA(mmc)
+
+# Run UMAP on the data
+mmc = RunUMAP(mmc, dims = 1:40, verbose = F)
+
+# Plot on sub-class
+DimPlot(mmc, reduction = 'umap', label = TRUE, group.by = 'subclass',
+        pt.size = 0.4, shuffle = T, label.box = T, repel = T, 
+        label.size = 4, label.color = 'black', alpha = 0.75) + NoLegend() +
+  ggtitle('Mouse Motor Cortex ')
 
 
+# Find Markers
+mmc.markers <- FindAllMarkers(mmc, group.by = 'subclass', test.use = 'MAST',
+                              only.pos = T)
+
+# Save resulting RData
+save(mmc, mmc.markers, 
+     file = '../data/test_datasets/azimuth_mouse_motor_cortex.RData')
+
+
+
+
+
+
+
+
+
+# Human Lung Atlas #############################################################
+library(Seurat)
+library(ggplot2)
+library(MAST)
+
+# Load dataset
+hl <- readRDS('../data/test_datasets/ref.Rds')
+
+# Plot on sub-class
+DimPlot(hl, reduction = 'refUMAP', label = TRUE, group.by = 'ann_level_3',
+        pt.size = 0.4, shuffle = T, label.box = T, repel = T, 
+        label.size = 4, label.color = 'black', alpha = 0.75) + NoLegend() +
+  ggtitle('Human Lung Atlas ')
+
+# Calculate dim reduction
+hl <- FindVariableFeatures(hl)
+
+# Find Markers
+hl.markers <- FindAllMarkers(hl, group.by = 'ann_level_3', test.use = 'MAST',
+                              only.pos = T)
+
+# Save resulting RData
+save(mmc, mmc.markers, 
+     file = '../data/test_datasets/azimuth_mouse_motor_cortex.RData')
