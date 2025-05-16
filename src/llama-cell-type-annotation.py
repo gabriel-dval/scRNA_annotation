@@ -137,6 +137,10 @@ def huggingchatcelltype(
         f"{add_info or ''}\n" +
         "\n".join([f"{cluster} : {genes}" for cluster, genes in processed_input.items()])
     )
+
+    # Write the prompt to a file
+    with open(f'{output_dir}/sbm_20_prompt.txt', 'w') as f:
+        f.write(prompt)
     
     # If no login credentials, return prompt
     if not username or not password:
@@ -194,16 +198,17 @@ def huggingchatcelltype(
 if __name__ == "__main__":
     
     # Test method
-    file = '../data/raw_cp/cp_cluster_markers.csv'
+    file = '../data/raw_sbm/sbm_cluster_markers.csv'
     test = seuratmarker_to_dict(file,
-                                topgenenumber=30)
+                                topgenenumber=20)
+    print(test)
     
     # Set HUGGINGCHAT_USERNAME and HUGGINGCHAT_PASSWORD environment variables before running
-    # (This mst be done independently of the script)
+    # (This must be done independently of the script)
     annotations = huggingchatcelltype(
         input=test, 
         model=7,
-        tissuename='mouse immune cells from the choroid plexus', 
+        tissuename='mouse skull bone marrow', 
         add_info='Be as precise as possible.'
     )
 
