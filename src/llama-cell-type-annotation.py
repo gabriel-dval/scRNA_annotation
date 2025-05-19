@@ -138,6 +138,8 @@ def huggingchatcelltype(
         "\n".join([f"{cluster} : {genes}" for cluster, genes in processed_input.items()])
     )
 
+    print(prompt)
+
     # Write the prompt to a file
     with open(f'{output_dir}/sbm_20_prompt.txt', 'w') as f:
         f.write(prompt)
@@ -201,7 +203,6 @@ if __name__ == "__main__":
     file = '../data/raw_cp/cp_cluster_markers.csv'
     test = seuratmarker_to_dict(file,
                                 topgenenumber=20)
-    print(test)
     
     # Set HUGGINGCHAT_USERNAME and HUGGINGCHAT_PASSWORD environment variables before running
     # (This must be done independently of the script)
