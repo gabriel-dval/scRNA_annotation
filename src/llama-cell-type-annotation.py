@@ -198,7 +198,7 @@ def huggingchatcelltype(
 if __name__ == "__main__":
     
     # Test method
-    file = '../data/raw_sbm/sbm_cluster_markers.csv'
+    file = '../data/raw_cp/cp_cluster_markers.csv'
     test = seuratmarker_to_dict(file,
                                 topgenenumber=20)
     print(test)
@@ -208,7 +208,7 @@ if __name__ == "__main__":
     annotations = huggingchatcelltype(
         input=test, 
         model=7,
-        tissuename='mouse skull bone marrow', 
+        tissuename='mouse choroid plexus', 
         add_info='Be as precise as possible.'
     )
 
