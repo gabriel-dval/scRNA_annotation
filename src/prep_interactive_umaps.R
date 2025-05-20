@@ -133,6 +133,18 @@ DimPlot(CP_Immune_norm, reduction = 'umap', label = TRUE, group.by = 'SingleR_re
 umap_reduc <- CP_Immune_norm@reductions$umap@cell.embeddings
 umap_annots <- cbind(umap_reduc, metadata)
 
+# Change all non-breakable space
+umap_annots$Manual <- gsub("\\x{00A0}", " ", 
+                           umap_annots$Manual, perl = TRUE)
+umap_annots$SingleR <- gsub("\\x{00A0}", " ", 
+                            umap_annots$SingleR, perl = TRUE)
+umap_annots$scMayoMap <- gsub("\\x{00A0}", " ", 
+                            umap_annots$scMayoMap, perl = TRUE)
+umap_annots$GPTCelltype <- gsub("\\x{00A0}", " ", 
+                            umap_annots$GPTCelltype, perl = TRUE)
+umap_annots$Gemini <- gsub("\\x{00A0}", " ", 
+                            umap_annots$Gemini, perl = TRUE)
+
 # Save output of interest
 write_csv(umap_annots, file = 'results/cp_annotations.csv')
 
