@@ -219,10 +219,10 @@ if __name__ == '__main__':
     #convert_mtx_to_h5ad(mtx, genes, barcodes, output_file)
 
     #Test extract_gem_data
-    ref_file = '../../Downloads/HLA.h5ad'
+    ref_file = '../../Documents/data/ref_sbm/BoneMarrow_cellxgene.h5ad'
     #res = extract_gem_data(ref_file, '../data/test_datasets/mATLAS_Brain_Myeloid_facs')
     adata = anndata.read_h5ad(ref_file)
-    print(adata.obs['entropy_original_ann_level_3_clean_leiden_3'].unique())
+    print(adata)
     #Filter the AnnData object to keep only cells from 'Bone Marrow'
     #Now extract only this bone marrow data
     # res = extract_gem_data(ref_file, '../data/test_datasets/Azimuth_HLA')
