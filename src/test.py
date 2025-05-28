@@ -211,6 +211,45 @@ def thicken_lines(input_path, output_path, thickness=3):
     new_img.save(output_path)
 
 
+def white_to_transparent(image_path, output_path=None, threshold=240):
+    """
+    Convert white or near-white pixels to transparent.
+    
+    Args:
+        image_path (str): Path to input image
+        output_path (str, optional): Path for output image. If None, adds '_transparent' to original name
+        threshold (int): RGB threshold value (0-255). Pixels with all RGB values >= threshold become transparent
+    
+    Returns:
+        PIL.Image: Image with transparent background
+    """
+    # Open image and convert to RGBA if not already
+    img = Image.open(image_path).convert("RGBA")
+    
+    # Convert to numpy array for easier manipulation
+    data = np.array(img)
+    
+    # Find pixels where all RGB values are >= threshold (near-white)
+    white_pixels = np.all(data[:, :, :3] >= threshold, axis=2)
+    
+    # Set alpha channel to 0 (transparent) for white pixels
+    data[white_pixels, 3] = 0
+    
+    # Convert back to PIL Image
+    result = Image.fromarray(data)
+    
+    # Save if output path provided
+    if output_path:
+        result.save(output_path)
+    elif output_path is None and isinstance(image_path, str):
+        # Auto-generate output filename
+        name, ext = image_path.rsplit('.', 1)
+        result.save(f"{name}_transparent.png")
+    
+    return result
+
+
+
 if __name__ == '__main__':
     mtx = '../data/raw_sbm/raw_sbm_data_2024.11.15/matrix.mtx'
     genes = '../data/raw_sbm/raw_sbm_data_2024.11.15/genes.tsv'
@@ -247,5 +286,5 @@ if __name__ == '__main__':
     #     convert_nonblack_to_transparent(f'../../Desktop/{i+1}_white.jpeg', f'../../Desktop/{i+1}_transparent.png', )
     #     thicken_lines(f'../../Desktop/{i+1}_transparent.png', f'../../Desktop/{i+1}_transparent_thickened.png', 3)
  
-  
+    white_to_transparent('../../Desktop/g14.png','../../Desktop/mc_face_transparent.png')
     
