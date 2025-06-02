@@ -213,14 +213,23 @@ DimPlot(OCM_immune, reduction = 'umap', label = TRUE, group.by = 'GPTCelltype_re
   ggtitle('GPTCellType corrected, GPT 4.5 Preview, detailedprompt2')
 
 # Create table with umap coordinates
-umap_reduc <- Immune_norm@reductions$umap@cell.embeddings
+umap_reduc <- OCM_immune@reductions$umap@cell.embeddings
 umap_annots <- cbind(umap_reduc, metadata)
 
 # Modify GPT to exclude numbers
+Manual <- gsub("\\x{00A0}", " ", 
+               umap_annots$Manual, perl = TRUE)
+GPTCelltype <- gsub("\\x{00A0}", " ", 
+                    umap_annots$GPTCelltype, perl = TRUE)
+GPTCelltype_res <- gsub("\\x{00A0}", " ", 
+                        umap_annots$GPTCelltype_res, perl = TRUE)
+
+umap_annots$Manual <- Manual
 umap_annots$GPTCelltype <- GPTCelltype
+umap_annots$GPTCelltype_res <- GPTCelltype_res
 
 # Save output of interest
-write_csv(umap_annots, file = 'results/sbm_annotations.csv')
+write_csv(umap_annots, file = 'results/sbm_new_annotations.csv')
 
 print(unique(GPTCelltype))
 
@@ -305,10 +314,20 @@ umap_annots <- cbind(umap_reduc, metadata)
 
 # Change wrong col names
 colnames(umap_annots)[20] <- 'GPTCelltype_res'
+Manual <- gsub("\\x{00A0}", " ", 
+               umap_annots$Manual, perl = TRUE)
+GPTCelltype <- gsub("\\x{00A0}", " ", 
+                        umap_annots$GPTCelltype, perl = TRUE)
+GPTCelltype_res <- gsub("\\x{00A0}", " ", 
+                        umap_annots$GPTCelltype_res, perl = TRUE)
+
+umap_annots$Manual <- Manual
+umap_annots$GPTCelltype <- GPTCelltype
+umap_annots$GPTCelltype_res <- GPTCelltype_res
 
 # Save output of interest
 write_csv(umap_annots, file = 'results/cp_new_annotations.csv')
 
-print(unique(GPTCelltype))
-print(unique(umap_annots$Gemini))
+print(unique(Manual))
+print(unique(umap_annots$GPTCelltype))
 
