@@ -260,8 +260,8 @@ if __name__ == '__main__':
     #Test extract_gem_data
     ref_file = '../../Documents/data/ref_sbm/BoneMarrow_cellxgene.h5ad'
     #res = extract_gem_data(ref_file, '../data/test_datasets/mATLAS_Brain_Myeloid_facs')
-    adata = anndata.read_h5ad(ref_file)
-    print(adata)
+    #adata = anndata.read_h5ad(ref_file)
+    #print(adata)
     #Filter the AnnData object to keep only cells from 'Bone Marrow'
     #Now extract only this bone marrow data
     # res = extract_gem_data(ref_file, '../data/test_datasets/Azimuth_HLA')
@@ -286,5 +286,5 @@ if __name__ == '__main__':
     #     convert_nonblack_to_transparent(f'../../Desktop/{i+1}_white.jpeg', f'../../Desktop/{i+1}_transparent.png', )
     #     thicken_lines(f'../../Desktop/{i+1}_transparent.png', f'../../Desktop/{i+1}_transparent_thickened.png', 3)
  
-    white_to_transparent('../../Desktop/g14.png','../../Desktop/mc_face_transparent.png')
+    white_to_transparent('../../Desktop/dollar_chain_2.jpg','../../Desktop/dollar_chain_transparent.png')
     
