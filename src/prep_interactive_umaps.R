@@ -331,3 +331,93 @@ write_csv(umap_annots, file = 'results/cp_new_annotations.csv')
 print(unique(Manual))
 print(unique(umap_annots$GPTCelltype))
 
+
+
+
+
+
+
+
+
+###############################################################################
+# mATLAS Lung #################################################################
+###############################################################################
+
+# First for CP
+load('../data/test_datasets/mATLAS_Lung_Droplet.RData')
+
+# Load additional annotations
+annots <- read.table('results/lung_key_results.csv', sep = ';', header = T)
+annots[36, 4] <- 'Correct'
+
+# Add metadata and change non-breakable space
+Manual <- gsub("\\x{00A0}", " ", annots$Manual, perl = TRUE)
+GPTCelltype <- gsub("\\x{00A0}", " ", annots$GPTCelltype, perl = TRUE)
+GPTCelltype_res <- gsub("\\x{00A0}", " ", annots$GPTCelltype_res, perl = TRUE)
+
+annots$Manual <- Manual
+annots$GPTCelltype <- GPTCelltype
+annots$GPTCelltype_res <- GPTCelltype_res
+
+# 1. First, extract the current metadata
+metadata <- toc@meta.data
+
+# 2. Convert your annotation dataframe's cluster column to match the seurat object's type
+# Check what type the seurat_clusters is in your object
+print(class(toc$Cluster))
+
+# Create a named lookup vector for each annotation column
+# Example for one annotation column (repeat for each column):
+for(col_name in colnames(annots)[-1]) {  # Skip the first column (cluster IDs)
+  # Create a named vector where names are cluster IDs and values are annotations
+  annotation_vector <- setNames(
+    annots[[col_name]],
+    as.character(annots$Cluster)
+  )
+  
+  # Add the new column to metadata by mapping through the existing clusters
+  metadata[[col_name]] <- annotation_vector[as.character(metadata$Cluster)]
+}
+
+# 4. Assign the updated metadata back to the Seurat object
+toc@meta.data <- metadata
+
+# 5. Verify the new columns were added correctly
+head(toc@meta.data)
+
+
+# Test 
+seed <- 4
+DimPlot(toc, reduction = 'umap', label = TRUE, group.by = 'GPTCelltype_res',
+        pt.size = 0.4, shuffle = T, seed = seed, label.box = T, repel = T, 
+        label.size = 4, label.color = 'black', alpha = 0.75) + NoLegend() +
+  ggtitle('GPTCellType corrected, GPT 4.5 Preview, detailedprompt2')
+
+
+# Create table with umap coordinates
+umap_reduc <- toc@reductions$umap@cell.embeddings
+umap_annots <- cbind(umap_reduc, metadata)
+
+# Change wrong col names
+Manual <- gsub("\\x{00A0}", " ", 
+               umap_annots$Manual, perl = TRUE)
+GPTCelltype <- gsub("\\x{00A0}", " ", 
+                    umap_annots$GPTCelltype, perl = TRUE)
+GPTCelltype_res <- gsub("\\x{00A0}", " ", 
+                        umap_annots$GPTCelltype_res, perl = TRUE)
+
+umap_annots$Manual <- Manual
+umap_annots$GPTCelltype <- GPTCelltype
+umap_annots$GPTCelltype_res <- GPTCelltype_res
+
+# Save output of interest
+write_csv(umap_annots, file = 'results/lung_annotations.csv')
+
+print(unique(Manual))
+print(unique(umap_annots$GPTCelltype))
+
+
+
+
+
+
