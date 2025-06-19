@@ -286,5 +286,5 @@ if __name__ == '__main__':
     #     convert_nonblack_to_transparent(f'../../Desktop/{i+1}_white.jpeg', f'../../Desktop/{i+1}_transparent.png', )
     #     thicken_lines(f'../../Desktop/{i+1}_transparent.png', f'../../Desktop/{i+1}_transparent_thickened.png', 3)
  
-    white_to_transparent('../../Desktop/cp_normal.png','../../Desktop/cp_transparent.png')
+    white_to_transparent('../../Desktop/music_note.jpg','../../Desktop/music_note_t.png')
     
