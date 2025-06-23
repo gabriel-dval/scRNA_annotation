@@ -153,7 +153,24 @@ def convert_nonblack_to_white(image_path, output_path, threshold=50):
     image.save(output_path)
 
 
-def convert_nonblack_to_transparent(image_path, output_path, threshold=50):
+def convert_nonblack_to_transparent(image_path, output_path, black_to_white = True,threshold=50):
+    '''What this does : 
+    Converts non-black pixels in an image to transparent, 
+    while turning dark pixels to white optionally (black_to_white option).
+
+    Args
+    ----
+    image_path (str): Path to the input image
+    output_path (str): Path to save the processed image
+    black_to_white (bool): If True, dark pixels are set to white; if False
+    they remain unchanged
+    threshold (int): Brightness threshold (0-255) for determining what's "black"
+    (default is 50, which is a low threshold to catch most dark pixels)
+
+    Returns
+    -------
+    None: The processed image is saved to output_path.
+    '''
     # Load the image
     image = Image.open(image_path)
     
@@ -174,7 +191,7 @@ def convert_nonblack_to_transparent(image_path, output_path, threshold=50):
             if brightness > threshold:
                 pixels[x, y] = (255, 255, 255, 0)  # Set alpha to 0 (transparent)
             # If pixel is dark, set it to white
-            if brightness < threshold:
+            if brightness < threshold and black_to_white:
                 pixels[x, y] = (255, 255, 255, a)  # Set to white, preserve alpha
             
     
@@ -183,6 +200,19 @@ def convert_nonblack_to_transparent(image_path, output_path, threshold=50):
 
 
 def thicken_lines(input_path, output_path, thickness=3):
+    """
+    Thicken white lines in an image by applying morphological dilation.
+
+    Args
+    ----
+        input_path (str): Path to input image
+        output_path (str): Path to save processed image
+        thickness (int): Thickness factor for line dilation (default is 3)
+    
+    Returns
+    -------
+        None: The processed image is saved to output_path.
+    """
     # Load image with alpha channel
     img = Image.open(input_path).convert("RGBA")
     img_np = np.array(img)
@@ -215,12 +245,14 @@ def white_to_transparent(image_path, output_path=None, threshold=240):
     """
     Convert white or near-white pixels to transparent.
     
-    Args:
+    Args
+    ----
         image_path (str): Path to input image
         output_path (str, optional): Path for output image. If None, adds '_transparent' to original name
         threshold (int): RGB threshold value (0-255). Pixels with all RGB values >= threshold become transparent
     
-    Returns:
+    Returns
+    -------
         PIL.Image: Image with transparent background
     """
     # Open image and convert to RGBA if not already
@@ -286,5 +318,5 @@ if __name__ == '__main__':
     #     convert_nonblack_to_transparent(f'../../Desktop/{i+1}_white.jpeg', f'../../Desktop/{i+1}_transparent.png', )
     #     thicken_lines(f'../../Desktop/{i+1}_transparent.png', f'../../Desktop/{i+1}_transparent_thickened.png', 3)
  
-    white_to_transparent('../../Desktop/music_note.jpg','../../Desktop/music_note_t.png')
+    convert_nonblack_to_transparent('../../Desktop/panda.jpg','../../Desktop/panda_changed.png')
     
