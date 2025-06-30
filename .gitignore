@@ -5,4 +5,5 @@ results*
 *.tar.gz
 src/annotate.R
 output*
+test_functions/*
 
